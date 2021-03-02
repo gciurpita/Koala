@@ -1,6 +1,8 @@
 #ifndef PHYSICS_H
 # define PHYSICS_H
 
-void physics (unsigned long msec);
+enum { PrThr, PrBrake };
+
+void physics (unsigned long msec, int dispInterval, int prMode );
 
 #endif

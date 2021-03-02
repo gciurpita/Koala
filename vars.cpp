@@ -1,62 +1,64 @@
-// definitions for all global variables
-
-#include "Arduino.h"
 
 #include "vars.h"
 
 const char *version   = "201122a";
 
-// -----------------------------------------------------------------------------
-//  dynamic variables
-
-int      brake;
-int      brakeInd;
-int      brakePct = 123;
+int      brakeAir;
+float    brakeAirPct;
 int      brakeCfm;
+
+int      brakeInd;
+float    brakeIndPct;
 int      button;
 
-int      cars   = 1;    // guarantees automatic braking
-int      carLen = 40;
+int      cars;
+int      carLen  = 40;
 
 int      dir;
-int      dirLst;
 
-int      grX10    = 0;
+int      encApos;
+int      encBpos;
 
-int      engine   = 1;
-int      loco     = 0;
+int      grX10;
 
-int      mph;
+int      engine;
+int      loco;
 
 unsigned long    msec;
-int      timeSec;
-
 int      mass;
+float    mph;
 int      reverser;
+
 int      slope;
 int      state;
 
 int      throttle;
-int      tonnage  = 0;
+int      timeSec;
+int      tonnage;
 
 int      tractEff;
-int      tractEffMax = 20000;
+int      tractEffMax;
 
 int      whistle;
-int      wtCar  = 80000;
-int      wtLoco = 68000;    // NA 34T
+int      wtCar;
+int      wtLoco;
+
+
+// -----------------------------------------------------------------------------
+// list of vars to display
 
 Vars_s vars [] = {
-    { & brake,    "brake" },
-    { & brakeInd, "brakeInd" },
-    { & brakePct, "brakePct" },
-    { & brakeCfm, "brakeCfm" },
+    { & brakeAir,    "brakeAir" },
+ // { & brakeAirPct, "brakeAirPct" },
+    { & brakeInd,    "brakeInd" },
+ // { & brakeIndPct, "brakeIndPct" },
+    { & brakeCfm,    "brakeCfm" },
+
     { & cars,     "cars" },
     { & carLen,   "carLen" },
     { & dir,      "dir" },
-    { & dirLst,   "dirLst" },
     { & loco,     "loco" },
-    { & mph,      "mph" },
+ // { & mph,      "mph" },
     { & mass,     "mass" },
     { & reverser, "reverser" },
     { & state,    "state" },
@@ -93,6 +95,7 @@ int      port            = 12080;
 #endif
 
 char     name [MAX_CHAR] = "Koala 4 Throttle";
+
 
 // -----------------------------------------------------------------------------
 //  stored variables

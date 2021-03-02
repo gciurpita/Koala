@@ -1,9 +1,7 @@
 #ifndef VARS_H
 # define VARS_H
 
-#include <stdio.h>
-
-typedef unsigned char byte;
+#include <Arduino.h>    // needed for byte
 
 #define MAX_CHAR  33
 
@@ -39,17 +37,21 @@ extern EeVar_t *pEeVars;
 // -------------------------------------
 // dynamic variables
 
-extern int      brake;
 extern int      brakeInd;
-extern int      brakePct;
+extern float    brakeIndPct;
 extern int      brakeCfm;
+
+extern int      brakeAir;
+extern float    brakeAirPct;
 extern int      button;
 
 extern int      cars;
 extern int      carLen;
 
 extern int      dir;
-extern int      dirLst;
+
+extern int      encApos;
+extern int      encBpos;
 
 extern int      grX10;
 
@@ -57,10 +59,10 @@ extern int      engine;
 extern int      loco;
 
 extern unsigned long    msec;
-extern int      mph;
-
 extern int      mass;
+extern float    mph;
 extern int      reverser;
+
 extern int      slope;
 extern int      state;
 

@@ -1,8 +1,13 @@
 // menu engine
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#ifdef Sim
+# include <stdio.h>
+# include <stdlib.h>
+# include <string.h>
+
+#else
+# include <Arduino.h>
+#endif
 
 #include "file.h"
 #include "koala.h"

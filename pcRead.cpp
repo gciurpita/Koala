@@ -196,7 +196,7 @@ _cmdMode (
             continue;     // only time val needs to be preserved
 
         case 'b':   // independent brake
-            brake = MAX_BRK < val ? MAX_BRK : val;
+            brakeInd = MAX_BRK < val ? MAX_BRK : val;
             break;
     
         case 'c':

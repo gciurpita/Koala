@@ -154,8 +154,12 @@ static void dispDefault (void)
         t = (char*) "No LOCO";
     else  {
         sprintf (s, "%2d:%02d   %d", timeSec / 60, timeSec % 60, loco);
+#if 0
         sprintf (s0, "   %3d Thr  %s", throttle, brakeStr [brake]);
-        sprintf (s1, "   %3d Spd  %s", mph,
+#else
+        sprintf (s0, "   %3d Thr  brk?", throttle);
+#endif
+        sprintf (s1, "   %3d Spd  %s", int(mph),
                 DIR_NEUTRAL == dir ? "Neutral"
                     : DIR_FOR == dir ? "Forward" : "Reverse");
     }
@@ -440,8 +444,10 @@ void loop()
     // -------------------------------------
     // update JMRI
     chkLoco ();
+
+#define DispInterval    10
     if (! (ST_NO_LOCO & state))
-        physics (msec);
+        physics (msec, DispInterval, PrThr);
 }
 
 // -----------------------------------------------------------------------------

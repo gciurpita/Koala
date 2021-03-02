@@ -19,9 +19,6 @@ Act_t  encAct [ActSize][ActSize] = {
        { Skp, For, Rev, ___ },  // 11
 };
 
-int encApos = 0;
-int encBpos = 0;
-
 int encAst  = 0;
 int encBst  = 0;
 
