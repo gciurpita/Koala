@@ -8,8 +8,10 @@
 #include "pcRead.h"
 #include "vars.h"
 
-enum { PinMode, CmdMode, CfgMode };
-static int _mode = PinMode;
+enum { CmdMode, CfgMode, PinMode };
+
+static int _mode    = CmdMode;
+static int _modeLst = CmdMode;
 
 // -----------------------------------------------------------------------------
 static void
@@ -142,10 +144,10 @@ _cmdModeHelp (
     Serial.println ("   # I - set independent brake to #");
     Serial.println ("     L - load configuration");
     Serial.println ("   # l - set loco address to #");
+    Serial.println ("     p - switch to pin mode");
     Serial.println ("   # r - set reverser #");
     Serial.println ("     S - save configuration");
     Serial.println ("   # t - set throttle #");
-    Serial.println ("     m - switch to pinMode");
     Serial.println ("     v - display state variables");
     Serial.println ("     V - print version");
 }
@@ -198,42 +200,42 @@ _cmdMode (
         case 'b':   // independent brake
             brakeInd = MAX_BRK < val ? MAX_BRK : val;
             break;
-    
+
         case 'c':
             cars = val;
             break;
-    
+
         case 'B':
             // reserved for buttons
             break;
-    
+
         case 'D':
             debug = val;
             break;
-    
+
         case 'd':
             fileDir ();
             break;
-    
+
         case 'E':
             _dispEeVars (Serial);
             break;
-    
+
         case 'e':
             _cfgHdr = 0;
             _mode = CfgMode;
             break;
-    
+
         case 'f':
             func     = val;
             msecFunc = msec;
             jmriFuncKey ((unsigned int) func, FUNC_TGL);
             break;
-    
+
         case 'I':   // independent brake
             brakeInd = MAX_BRK < val ? MAX_BRK : val;
             break;
-    
+
         case 'L':
             varsLoad ();
             break;
@@ -245,12 +247,16 @@ _cmdMode (
             reverser = MAX_REV / 2;
             val = 0;
             break;
-    
+
+        case 'p':
+            _mode = PinMode;
+            break;
+
         case 'r':
             reverser = MAX_REV < val ? MAX_REV : val;
             val = 0;
             break;
-    
+
         case 'S':
             varsSave ();
             break;
@@ -260,30 +266,26 @@ _cmdMode (
             throttle = MAX_THR < throttle ? MAX_THR : throttle;
             val = 0;
             break;
-    
-        case 'm':
-            _mode = PinMode;
-            break;
-    
+
         case 'V':
             Serial.print ("\nversion: ");
             Serial.println (version);
             break;
-    
+
         case 'v':
             _dispVars (Serial);
             break;
-    
+
         case '\n':      // ignore
         case '\r':      // ignore
             if (1 == idx)
                 return 0;
             break;
-    
+
         case '?':
             _cmdModeHelp (Serial);
             break;
-    
+
         default:
             Serial.print ("unknown char ");
             Serial.println (c,HEX);
@@ -310,8 +312,8 @@ _pinModeHelp (
     Serial.println ("   # P - set pin # to INPUT_PULLUP");
     Serial.println ("   # a - analogRead (pin #)");
     Serial.println ("   # c - digitalWrite (pin #, LOW)");
-    Serial.println ("     m - switch to cmd _mode");
     Serial.println ("   # p - analogWrite (analogPin, #)");
+    Serial.println ("     q - switch to cmd _mode");
     Serial.println ("   # r - digitalRead (pin #)");
     Serial.println ("   # s - digitalWrite (pin #, HIGH)");
     Serial.println ("   # t - toggle pin # output");
@@ -343,32 +345,32 @@ _pinMode (
         case '9':
             val = c - '0' + (10 * val);
             return 1;     // only time val needs to be preserved
-    
+
         case 'A':
             analogPin = val;
             Serial.print   ("analogPin = ");
             Serial.println (val);
             val = 0;
             break;
-    
+
         case 'a':
             Serial.print   ("analogRead: ");
             Serial.println (analogRead (val));
             val = 0;
             break;
-    
+
         case 'c':
             digitalWrite (val, LOW);
             Serial.print   ("digitalWrite: LOW  ");
             Serial.println (val);
             val = 0;
             break;
-    
+
         case 'd':
             debug = val;
             val   = 0;
             break;
-    
+
         case 'I':
             pinMode (val, INPUT);
             Serial.print   ("pinMode ");
@@ -376,11 +378,7 @@ _pinMode (
             Serial.println (" INPUT");
             val = 0;
             break;
-    
-        case 'm':
-            _mode = CmdMode;
-            break;
-    
+
         case 'O':
             pinMode (val, OUTPUT);
             Serial.print   ("pinMode ");
@@ -388,7 +386,7 @@ _pinMode (
             Serial.println (" OUTPUT");
             val = 0;
             break;
-    
+
         case 'P':
             pinMode (val, INPUT_PULLUP);
             Serial.print   ("pinMode ");
@@ -396,7 +394,7 @@ _pinMode (
             Serial.println (" INPUT_PULLUP");
             val = 0;
             break;
-    
+
         case 'p':
          // analogWrite (analogPin, val);
             Serial.print   ("analogWrite: pin ");
@@ -405,7 +403,11 @@ _pinMode (
             Serial.println (val);
             val = 0;
             break;
-    
+
+        case 'q':
+            _mode = CmdMode;
+            break;
+
         case 'r':
             Serial.print   ("digitalRead: pin ");
             Serial.print   (val);
@@ -413,35 +415,35 @@ _pinMode (
             Serial.println (digitalRead (val));
             val = 0;
             break;
-    
+
         case 'S':
             varsSave ();
             break;
-    
+
         case 's':
             digitalWrite (val, HIGH);
             Serial.print   ("digitalWrite: HIGH ");
             Serial.println (val);
             val = 0;
             break;
-    
+
         case 't':
             digitalWrite (val, ! digitalRead (val));
             val = 0;
             break;
-    
+
         case 'v':
             Serial.print ("\nversion: ");
             Serial.println (version);
             break;
-    
+
         case '\n':      // ignore
             break;
-    
+
         case '?':
             _pinModeHelp (Serial);
             break;
-    
+
         default:
             Serial.print ("unknown char ");
             Serial.println (c,HEX);
@@ -455,22 +457,42 @@ _pinMode (
     return 0;
 }
 
+
 // -----------------------------------------------------------------------------
 // process single character commands from the PC
 int
 pcRead (
     Stream &Serial)
 {
+    // display help screen when switching modes
+    if (_modeLst != _mode)  {
+        _modeLst = _mode;
+
+        switch (_mode)  {
+        case CfgMode:
+            break;
+
+        case CmdMode:
+            _cmdModeHelp (Serial);
+            break;
+
+        case PinMode:
+            _pinModeHelp (Serial);
+            break;
+        }
+    }
+
+    // invoke mode specific routine
     switch (_mode)  {
     case CfgMode:
         return _cfgMode (Serial);
 
-    case CmdMode:
-        return _cmdMode (Serial);
-
-    default:
     case PinMode:
         return _pinMode (Serial);
+
+    default:
+    case CmdMode:
+        return _cmdMode (Serial);
     }
 
     return 0;
