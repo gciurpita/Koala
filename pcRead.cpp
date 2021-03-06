@@ -145,11 +145,13 @@ _cmdModeHelp (
     Serial.println ("     L - load configuration");
     Serial.println ("   # l - set loco address to #");
     Serial.println ("     p - switch to pin mode");
+    Serial.println ("     R - reset");
     Serial.println ("   # r - set reverser #");
     Serial.println ("     S - save configuration");
     Serial.println ("   # t - set throttle #");
     Serial.println ("     v - display state variables");
     Serial.println ("     V - print version");
+    Serial.println ("     X - delete SPIFF file");
 }
 
 // -----------------------------------------------------------------------------
@@ -252,6 +254,10 @@ _cmdMode (
             _mode = PinMode;
             break;
 
+        case 'R':
+            exit (0);
+            break;
+
         case 'r':
             reverser = MAX_REV < val ? MAX_REV : val;
             val = 0;
@@ -274,6 +280,10 @@ _cmdMode (
 
         case 'v':
             _dispVars (Serial);
+            break;
+
+        case 'X':
+            fileDelete ();
             break;
 
         case '\n':      // ignore
