@@ -24,9 +24,26 @@ Loco_t locos [] = {
 
 #define N_LOCO   (sizeof(locos) / sizeof(Loco_t))
 
-// -----------------------------------------------
+const char *locoFname = "/spiffs/loco.dat";
+
+// ---------------------------------------------------------
+void
+locoDisp (void)
+{
+    printf ("%s:\n", __func__);
+
+    Loco_t* p = locos;
+    for (unsigned n = 0; n < N_LOCO; n++, p++)  {
+        printf (" %2d:", n);
+        printf (" %5.1f", p->drvrDia);
+        printf (" %-10s", p->whyte);
+        printf (" %s\n",    p->name);
+    }
+}
+
+// ---------------------------------------------------------
 Loco_t *
-getLoco (
+locoGet (
     char* name)
 {
     Loco_t* p = locos;
@@ -44,4 +61,59 @@ getLoco (
 
     printf ("%s: ERROR - %s unknown\n", __func__, name);
     exit (2);
+}
+
+// ---------------------------------------------------------
+void
+locoSave (void)
+{
+    printf ("%s:\n", __func__);
+
+    FILE * fp = fopen (locoFname, "w");
+    if (NULL == fp)  {
+        printf (" %s: fopen failed", __func__);
+        return;
+    }
+
+    Loco_t* p = locos;
+
+    for (int n = 0; N_LOCO > n; n++, p++)  {
+        if (1 != fwrite ((void*) p, sizeof(Loco_t), 1, fp))  {
+            printf (" %s: fwrite %d incomplete\n", __func__, n);
+            break;
+        }
+    }
+
+    fclose (fp);
+}
+
+// ---------------------------------------------------------
+void
+locoLoad (void)
+{
+    Loco_t* p = locos;
+
+    printf ("%s:\n", __func__);
+
+    FILE * fp = fopen (locoFname, "r");
+    if (NULL == fp)  {
+        locoSave ();
+        goto done;
+    }
+
+#if 0
+    memset (locos, 0, sizeof(locos));
+    locoDisp ();
+#endif
+
+    for (int n = 0; N_LOCO > n; n++, p++)  {
+        if (1 != fread ((void*) p, sizeof(Loco_t), 1, fp))  {
+            printf (" %s: fread %d incomplete\n", __func__, n);
+            break;
+        }
+    }
+
+done:
+    fclose (fp);
+    locoDisp ();
 }

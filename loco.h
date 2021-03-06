@@ -23,6 +23,9 @@ typedef struct  {
     char   name  [20];
 } Loco_t;
 
-Loco_t * getLoco (char* name);
+void     locoDisp (void);
+Loco_t * locoGet  (char* name);
+void     locoLoad (void);
+void     locoSave (void);
 
 #endif
