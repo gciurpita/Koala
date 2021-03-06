@@ -36,7 +36,9 @@ extern void eStop (void);
 extern void dispOled (const char*, const char*, const char*, const char*, bool); 
 // extern char s0[30];
 // extern char s1[30];
-extern char s [80];
+//
+#define S_SIZE  80
+extern char s [S_SIZE];
 
 enum { FUNC_CLR, FUNC_SET, FUNC_TGL };
 int jmriFuncKey (unsigned func, int cmd);
