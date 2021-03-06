@@ -13,6 +13,7 @@
 #include "encoder.h"
 #include "file.h"
 #include "koala.h"
+#include "loco.h"
 #include "menu.h"
 #include "pcRead.h"
 #include "pins.h"
@@ -57,7 +58,7 @@ const char * stateStr [] = {
 char s0[30];
 char s1[30];
 char s2[30];
-char s [80];
+char s [S_SIZE];
 
 // ---------------------------------------------------------
 // check if loco # has changes
@@ -466,6 +467,7 @@ setup (void)
     SPIFFS.begin (true);
 #if 1
     varsLoad ();
+    locoLoad ();
 #endif
 
     // init hardware
