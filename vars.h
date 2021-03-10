@@ -79,15 +79,6 @@ extern int      wtLoco;
 
 // -------------------------------------
 // stored variables
-#define MAX_ADR  10
-extern int      adr [MAX_ADR];
-
-extern char     host [];
-extern int      port;
-
-extern char     ssid [];
-extern char     pass [];
-extern char     name [];
 
 extern const char *version;
 

@@ -10,16 +10,15 @@
 
 #include "brakes.h"
 #include "buttons.h"
+#include "cfg.h"
 #include "encoder.h"
 #include "file.h"
 #include "koala.h"
-#include "loco.h"
 #include "menu.h"
 #include "pcRead.h"
 #include "pins.h"
 #include "pots.h"
 #include "physics.h"
-#include "server.h"
 #include "vars.h"
 
 unsigned int debug = 1;
@@ -190,7 +189,7 @@ static void dispInputs (void)
     byte  encA = 10 * digitalRead (Enc_A_Dt) + digitalRead (Enc_A_Clk);
     byte  encB = 10 * digitalRead (Enc_B_Dt) + digitalRead (Enc_B_Clk);
 
-    sprintf (s,  "%02d:%02d %s", timeSec / 60, timeSec % 60, name);
+            sprintf (s,  "%02d:%02d %s", timeSec / 60, timeSec % 60, cfg.name);
 #if 0
     sprintf (s0, "bkA %03d, bkB %3d", encApos, encBpos);
 #else
@@ -255,25 +254,25 @@ eStop (void)
 // connect to jmri
 static void jmriConnect (void)
 {
-    sprintf (s0, "%d", port);
-    dispOled("JMRI connecting", host, s0, 0, CLR);
+    sprintf (s0, "%d", cfg.port);
+    dispOled("JMRI connecting", cfg.host, s0, 0, CLR);
 
 #if 0
-    sprintf (s, "JMRI connecting, %s, %s", host, s0, 0);
+    sprintf (s, "JMRI connecting, %s, %s", cfg.host, s0, 0);
     Serial.println (s);
 #endif
 
-    if (wifi.connect(host, port))  {
+    if (wifi.connect(cfg.host, cfg.port))  {
         state |= ST_JMRI;
 
         dispOled("JMRI connected", 0, 0, 0, CLR);
-        sprintf (s, "N%s", name);
+        sprintf (s, "N%s", cfg.name);
         wifiSend (s);
 
         delay (1000);
     }
 
-    dispOled(0, host, s0, 0, CLR);
+    dispOled(0, cfg.host, s0, 0, CLR);
     delay (1000);
 }
 
@@ -315,26 +314,26 @@ int jmriFuncKey (
 // connect to wifi
 static void wifiConnect (void)
 {
-    if (WL_CONNECTED == WiFi.begin (ssid, pass))  {
+    if (WL_CONNECTED == WiFi.begin (cfg.ssid, cfg.pass))  {
         state |= ST_WIFI;
 
         IPAddress ip = WiFi.localIP ();
         sprintf (s, "%u.%u.%u.%u", ip[0], ip[1], ip[2], ip[3]);
 
         dispOled("WiFi connected", 0, s, 0, CLR);
-        serverInit ();
+ //     serverInit ();
         delay (1000);
     }
     else  {
  //     delay (1000);
-        dispOled("WiFi connecting", ssid, pass, 0, CLR);
+        dispOled("WiFi connecting", cfg.ssid, cfg.pass, 0, CLR);
 #if 0
-        sprintf ((char*)"WiFi connecting, %s, %s", ssid, pass);
+        sprintf ((char*)"WiFi connecting, %s, %s", cfg.ssid, cfg.pass);
         Serial.println (s);
 #endif
 
         delay (1000);
-        dispOled(0, ssid, pass, 0, CLR);
+        dispOled(0, cfg.ssid, cfg.pass, 0, CLR);
     }
 }
 
@@ -431,7 +430,7 @@ void loop()
 
     // -------------------------------------
     // scan external interfaces
-    server ();
+ // server ();
     wifiReceive ();
 
     // check serial I/Fs and update state appropriately
@@ -456,18 +455,18 @@ void
 setup (void)
 {
     Serial.begin (115200);
-    Serial.print   (name);
+
+    Serial.print   (cfg.name);
     Serial.print   (" - ");
     Serial.println (version);
 
 #ifdef BT
-    serialBT.begin (name);
+    serialBT.begin (cfg.name);
 #endif
 
     SPIFFS.begin (true);
 #if 1
-    varsLoad ();
-    locoLoad ();
+    cfgLoad ();
 #endif
 
     // init hardware
@@ -485,7 +484,7 @@ setup (void)
     display.setColor(WHITE);
 
     // -------------------------------------
-    dispOled(name, version, 0, 0, CLR);
+    dispOled(cfg.name, version, 0, 0, CLR);
 
     state = ST_NO_LOCO;
 

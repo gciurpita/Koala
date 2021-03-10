@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#include "cfg.h"
 #include "menu.h"
 #include "menus.h"
 #include "vars.h"
@@ -16,27 +17,30 @@ P_t pEng = { "Engine",  &engine, 0, 1,  sOnOff, { __,   __,   up, dn, dspP }};
 P_t pTon = { "Tonnage", &tonnage, 0, 3, sWt,    { __,   __,   up, dn, dspP }};
 P_t pLoc = { "Loco",    &loco,    0, 0, NULL, { __,  sft, inc, dec, dspV }};
 
-P_t pAd0 = { "Adr[0]", &adr[0], 0, 0, & loco, {sel, sft, inc, dec, dspV}};
-P_t pAd1 = { "Adr[1]", &adr[1], 0, 0, & loco, {sel, sft, inc, dec, dspV}};
-P_t pAd2 = { "Adr[2]", &adr[2], 0, 0, & loco, {sel, sft, inc, dec, dspV}};
-P_t pAd3 = { "Adr[3]", &adr[3], 0, 0, & loco, {sel, sft, inc, dec, dspV}};
+P_t pAd0 = { "Adr[0]", &Loco[0].adr, 0, 0, & loco, {sel, sft, inc, dec, dspV}};
+P_t pAd1 = { "Adr[1]", &Loco[1].adr, 0, 0, & loco, {sel, sft, inc, dec, dspV}};
+P_t pAd2 = { "Adr[2]", &Loco[2].adr, 0, 0, & loco, {sel, sft, inc, dec, dspV}};
+P_t pAd3 = { "Adr[3]", &Loco[3].adr, 0, 0, & loco, {sel, sft, inc, dec, dspV}};
 
-P_t pAd4 = { "Adr[4]", &adr[4], 0, 0, & loco, {sel, sft, inc, dec, dspV}};
-P_t pAd5 = { "Adr[5]", &adr[5], 0, 0, & loco, {sel, sft, inc, dec, dspV}};
-P_t pAd6 = { "Adr[6]", &adr[6], 0, 0, & loco, {sel, sft, inc, dec, dspV}};
-P_t pAd7 = { "Adr[7]", &adr[7], 0, 0, & loco, {sel, sft, inc, dec, dspV}};
+P_t pAd4 = { "Adr[4]", &Loco[4].adr, 0, 0, & loco, {sel, sft, inc, dec, dspV}};
+P_t pAd5 = { "Adr[5]", &Loco[5].adr, 0, 0, & loco, {sel, sft, inc, dec, dspV}};
+P_t pAd6 = { "Adr[6]", &Loco[6].adr, 0, 0, & loco, {sel, sft, inc, dec, dspV}};
+P_t pAd7 = { "Adr[7]", &Loco[7].adr, 0, 0, & loco, {sel, sft, inc, dec, dspV}};
 
-P_t pAd8 = { "Adr[8]", &adr[8], 0, 0, & loco, {sel, sft, inc, dec, dspV}};
-P_t pAd9 = { "Adr[9]", &adr[9], 0, 0, & loco, {sel, sft, inc, dec, dspV}};
+P_t pAd8 = { "Adr[8]", &Loco[8].adr, 0, 0, & loco, {sel, sft, inc, dec, dspV}};
+P_t pAd9 = { "Adr[9]", &Loco[9].adr, 0, 0, & loco, {sel, sft, inc, dec, dspV}};
 
+#if 0
 P_t pHos = { "Host",  (int*)host, 0, 0,  NULL, { __,   sfA, inA, deA, dspA }};
 P_t pPrt = { "Port",  &port,      0, 0,  NULL, { __,   sft, inc, dec, dspV }};
 
 P_t pSsd = { "SSID",  (int*)ssid, 0, 0,  NULL, { __,   sfA, inA, deA, dspA }};
 P_t pPsw = { "Pass",  (int*)pass, 0, 0,  NULL, { __,   sfA, inA, deA, dspA }};
+#endif
 
 // -------------------------------------------------------------------
 // menus
+#if 0
 Menu_t menuComm [] = {
     { "Host",   "",      T_STR,    (void*) & pHos },
     { "Port",   "",      T_PARAM,  (void*) & pPrt },
@@ -45,6 +49,7 @@ Menu_t menuComm [] = {
     { "Pass",   "",      T_STR,    (void*) & pPsw },
     { NULL,     NULL,    T_NULL,   NULL },
 };
+#endif
 
 // -------------------------------------
 // DCC loco addresses
@@ -61,8 +66,10 @@ Menu_t menuAdr [] = {
 Menu_t menuMain [] = {
  // { NULL,      NULL,   T_NONE,   NULL },
  // { "Loco",    "Addr", T_MENU,   (void*) menuAdr, &loco },
-    { "Loco",    "Addr", T_MENU,   (void*) menuAdr },
+#if 0
     { "Comm",    "Cfg",  T_MENU,   (void*) menuComm },
+#endif
+    { "Loco",    "Addr", T_MENU,   (void*) menuAdr },
     { "Engine",  "",     T_PARAM,  (void*) & pEng },
     { "Tonnage", "",     T_PARAM,  (void*) & pTon },
     { "Options", "",     T_NONE,   NULL },

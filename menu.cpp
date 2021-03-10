@@ -9,6 +9,7 @@
 # include <Arduino.h>
 #endif
 
+#include "cfg.h"
 #include "file.h"
 #include "koala.h"
 #include "menu.h"
@@ -310,9 +311,7 @@ menu (
             q   = & m [idx [lvl]];
         }
 
-#if 1
-        varsSave ();
-#endif
+        cfgSave ();
         break;
 
     case M_SEL:

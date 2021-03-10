@@ -1,7 +1,7 @@
 #ifndef SIMD_H
 # define SIMD_H
 
-# include "loco.h"
+# include "cfg.h"
 # include "phyConst.h"
 
 // ----------------------------------------------------------
@@ -65,7 +65,7 @@ typedef struct  {
 // ----------------------------------------------------------
 extern State_t  st;
 
-extern void  engineInit (Loco_t *pLoco);
+extern void  engineInit (Engine_s *pLoco);
 extern void  enginePr   (int hdr);
 extern float engineTe   (float dTsec, float fps, int throttle, int cutoff);
 extern void  engineRst  (void);

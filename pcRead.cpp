@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 
+#include "cfg.h"
 #include "file.h"
 #include "koala.h"
 #include "pcRead.h"
@@ -13,6 +14,7 @@ enum { CmdMode, CfgMode, PinMode };
 static int _mode    = CmdMode;
 static int _modeLst = CmdMode;
 
+#if 0
 // -----------------------------------------------------------------------------
 static void
 _dispEeVars (
@@ -36,6 +38,8 @@ _dispEeVars (
     }
 }
 
+#endif
+
 // -----------------------------------------------------------------------------
 static void
 _dispVars (
@@ -54,6 +58,7 @@ _dispVars (
 
 // ---------------------------------------------------------
 // edit throttle parameters thru serial monitor
+#if 0
 #define MAX_BUF 40
 int  _cfgHdr = 0;
 
@@ -79,13 +84,13 @@ _cfgMode (
             if (0 == idx)  {    // check for char on first column
                 switch (c)  {
                 case 'q':
-                    varsSave ();
+                    cfgSave ();
                     Serial.println ("pcRead: switch to Cmd mode");
                     _mode = CmdMode;             // what about ssid/password
                     return 1;
 
                 case 'S':
-                    varsSave ();
+                    cfgSave ();
                     return 0;
 
                 default:
@@ -126,6 +131,7 @@ _cfgMode (
 
     return 1;
 }
+#endif
 
 // -----------------------------------------------------------------------------
 static void
@@ -219,6 +225,7 @@ _cmdMode (
             fileDir ();
             break;
 
+#if 0
         case 'E':
             _dispEeVars (Serial);
             break;
@@ -227,6 +234,7 @@ _cmdMode (
             _cfgHdr = 0;
             _mode = CfgMode;
             break;
+#endif
 
         case 'f':
             func     = val;
@@ -239,7 +247,7 @@ _cmdMode (
             break;
 
         case 'L':
-            varsLoad ();
+            cfgLoad ();
             break;
 
         case 'l':
@@ -264,7 +272,7 @@ _cmdMode (
             break;
 
         case 'S':
-            varsSave ();
+            cfgSave ();
             break;
 
         case 't':
@@ -427,7 +435,7 @@ _pinMode (
             break;
 
         case 'S':
-            varsSave ();
+            cfgSave ();
             break;
 
         case 's':
@@ -494,8 +502,10 @@ pcRead (
 
     // invoke mode specific routine
     switch (_mode)  {
+#if 0
     case CfgMode:
         return _cfgMode (Serial);
+#endif
 
     case PinMode:
         return _pinMode (Serial);

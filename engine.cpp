@@ -16,7 +16,7 @@
 // ----------------------------------------------------------
 // state variables
 
-Loco_t  *_pLoco = NULL;
+Engine_s *_pLoco = NULL;
 State_t  st;
 
 float    ft;
@@ -465,7 +465,7 @@ engineRst () {
 // --------------------------------------------------------------------
 void
 engineInit (
-    Loco_t *pLoco)
+    Engine_s *pLoco)
 {
     _pLoco = pLoco;
 
