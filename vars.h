@@ -3,6 +3,8 @@
 
 #include <Arduino.h>    // needed for byte
 
+#include "eng.h"
+
 #define MAX_CHAR  33
 
 #define MAX_BRK   5
@@ -16,7 +18,6 @@ enum {
     DIR_REV     = -1
 };
 
-enum { V_NUL, V_STR, V_INT };
 
 struct Vars_s {
     int        *p;
@@ -25,14 +26,16 @@ struct Vars_s {
 
 extern Vars_s  *pVars;
 
-typedef struct {
-    void       *p;
-    byte        nByte;
-    byte        type;
-    const char *desc;
-} EeVar_t;
+// -------------------------------------
+#define N_LOCO      20
 
-extern EeVar_t *pEeVars;
+struct Loco_s {
+    int     adr;
+    float   mphToDcc;
+    char    engine [LOCO_LEN];
+};
+
+extern Loco_s locos [N_LOCO];
 
 // -------------------------------------
 // dynamic variables
@@ -80,6 +83,13 @@ extern int      wtLoco;
 // -------------------------------------
 // stored variables
 
+extern char     name [];
 extern const char *version;
+
+extern char     host [];
+extern int      port;
+
+extern char     ssid [];
+extern char     pass [];
 
 #endif
