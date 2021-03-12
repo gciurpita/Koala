@@ -1,43 +1,81 @@
-// define memory for configuration variables and
-// statically defines default values
-//
-#include <Arduino.h>
-#include "cfg.h"
+#include "Arduino.h"
 
-Cfg_s cfg = {
-     "WiFi-ssid",
-     "WiFi-password",
+#include "eng.h"
+#include "vars.h"
 
-     "192.168.1.100",
-     12080,
+const char *cfgFname = "/spiffs/koala.dat";
 
-     "Koala 4 Throttle",
+// -------------------------------------
+// stored (configurable) variable description
+enum { V_NONE, V_STR, V_INT, V_LOCO, V_ENG };
 
-     {
-        { 100, 1.2, "I-10sa"    },
-        { 200, 1.2, "G-1sas"    },
-        { 300, 1.2, "K-1"       },
-        { 400, 1.2, "T-1"       },
-        { 500, 1.2, "NA_2-6-2"  },
-        { 600, 1.2, "BigBoy"    },
-        { 700, 1.2, "catskill"  },
-        { 800, 1.2, "MILW_4-4-2"},
-        { 900, 1.2, "MILW_F-6"  },
-     },
+struct CfgVar_s {
+    void       *p;
+    byte        nByte;
+    byte        type;
+    const char *desc;
+};
 
-     {
-       //  drvr    cyl-size   #   PSI   Adh   Tot   Tnd  Grate  BlrLn  BlrDi  BlrVol Pipe  Whyte      Name 
-        {  61.5, 27.0, 32.0,  2,  220,  132,  146,   90,  95.0,  13.5,  88.0,      0, 0.0, "2-8-0",   "I-10sa"    },
-        {  80.0, 25.0, 28.0,  2,  200,   90,  140,   90,  95.0,  19.0,  80.0,      0, 0.0, "4-6-2",   "G-1sas"    },
-        {  61.5, 30.5, 32.0,  2,  220,  160,  200,  115, 108.0,  22.2, 100.0,      0, 0.0, "2-10-2",  "K-1"       },
-        {  70.0, 27.0, 32.0,  2,  240,  126,  200,   90,  95.0,  13.5,  88.0,      0, 0.0, "4-8-4",   "T-1"       },
-        {  36.0, 13.0, 18.0,  2,  180,   24,   34,    0,   9.0,  11.0,  40.0,      0, 8.0, "2-6-2T",  "NA_2-6-2"  },
-        {  68.0, 23.8, 32.0,  4,  300,  270,  380,  170, 150.0,  18.0,  95.0,      0, 0.0, "4-8-8-4", "BigBoy"    },
-        {  84.0, 19.0, 28.0,  2,  300,   74,  140,  123,  69.0,  19.0,  80.0,      0, 0.0, "4-4-2",   "MILW_4-4-2"},
-        {  80.0, 26.0, 28.0,  2,  225,   86,  187,  138,  80.0,  19.0,  80.0,      0, 0.0, "F-6",     "MILW_F-6"  },
-        {  84.0, 23.5, 30.0,  2,  300,  108,  207,  187,  96.5,  19.0,  82.5,      0, 0.0, "F-7",     "MILW_F-7"  },
-        {  70.0, 27.0, 32.0,  2,  320,  160,  247,  189, 107.7,   0.0,   0.0,      0, 0.0, "4-8-4",   "N&W"       },
+// -------------------------------------
+//  stored variables
+
+CfgVar_s cfgVarTbl [] = {
+    { (void*)   name,       MAX_CHAR,     V_STR,  "name" },
+
+    { (void*)   ssid,       MAX_CHAR,       V_STR,  "ssid"},
+    { (void*)   pass,       MAX_CHAR,       V_STR,  "password" },
+    { (void*)   host,       MAX_CHAR,       V_STR,  "hostname" },
+    { (void*) & port,       sizeof(int),    V_INT,  "port" },
+
+    { (void*) & locos [0],  sizeof(Loco_s), V_LOCO, "loco_1" },
+    { (void*) & locos [1],  sizeof(Loco_s), V_LOCO, "loco_2" },
+    { (void*) & locos [2],  sizeof(Loco_s), V_LOCO, "loco_3" },
+
+    { (void*) & locos [3],  sizeof(Loco_s), V_LOCO, "loco_4" },
+    { (void*) & locos [4],  sizeof(Loco_s), V_LOCO, "loco_5" },
+    { (void*) & locos [5],  sizeof(Loco_s), V_LOCO, "loco_6" },
+    { (void*) & locos [6],  sizeof(Loco_s), V_LOCO, "loco_7" },
+
+    { (void*) & locos [7],  sizeof(Loco_s), V_LOCO, "loco_8" },
+    { (void*) & locos [8],  sizeof(Loco_s), V_LOCO, "loco_9" },
+    { (void*) & locos [9],  sizeof(Loco_s), V_LOCO, "loco_10" },
+
+    { (void*) & engs  [0],  sizeof(Eng_s),  V_ENG,   "eng_0"  },
+    { (void*) & engs  [1],  sizeof(Eng_s),  V_ENG,   "eng_1"  },
+    { (void*) & engs  [2],  sizeof(Eng_s),  V_ENG,   "eng_2"  },
+    { (void*) & engs  [3],  sizeof(Eng_s),  V_ENG,   "eng_3"  },
+
+    { (void*) & engs  [4],  sizeof(Eng_s),  V_ENG,   "eng_4"  },
+    { (void*) & engs  [5],  sizeof(Eng_s),  V_ENG,   "eng_5"  },
+    { (void*) & engs  [6],  sizeof(Eng_s),  V_ENG,   "eng_6"  },
+    { (void*) & engs  [7],  sizeof(Eng_s),  V_ENG,   "eng_7"  },
+
+    { (void*) & engs  [8],  sizeof(Eng_s),  V_ENG,   "eng_8"  },
+    { (void*) & engs  [9],  sizeof(Eng_s),  V_ENG,   "eng_9"  },
+    { (void*) & engs [10],  sizeof(Eng_s),  V_ENG,   "eng_10"  },
+    { (void*) & engs [11],  sizeof(Eng_s),  V_ENG,   "eng_11"  },
+
+    { NULL,               0,              V_NONE, NULL     },
+};
+
+// -----------------------------------------------------------------------------
+// zero out all cfg data for testing
+void
+cfgClr (void)
+{
+    printf ("%s:\n", __func__);
+
+    for (CfgVar_s *p = cfgVarTbl; V_NONE != p->type; p++)  {
+        bzero ((void*) p->p, p->nByte);
     }
+};
+
+// ---------------------------------------------------------
+void
+cfgDispLoco (
+    Loco_s  *p )
+{
+     printf (" %6d, %6.2f, %s\n", p->adr, p->mphToDcc, p->engine);
 };
 
 // ---------------------------------------------------------
@@ -45,59 +83,149 @@ void
 cfgDisp (void)
 {
     printf ("%s:\n", __func__);
-    printf ("    %20s ssid\n", cfg.ssid);
-    printf ("    %20s pass\n", cfg.pass);
-    printf ("    %20s host\n", cfg.host);
-    printf ("    %20d port\n", cfg.port);
-    printf ("    %20s name\n", cfg.name);
-    printf ("\n");
 
-    for (unsigned n = 0; n < 10; n++)
-        printf ("    %6d %4.1f %s\n",
-            cfg.locos [n].adr, cfg.locos [n].mphToDcc, cfg.locos [n].engine);
-    printf ("\n");
+    for (CfgVar_s *p = cfgVarTbl; V_NONE != p->type; p++)  {
+        switch (p->type)  {
+        case V_INT:
+            printf ("  %8s: %6d\n", p->desc, *(int*)p->p);
+            break;
 
-    for (unsigned n = 0; n < 12; n++)
-        printf ("    %4.1f %-10s  %s\n",
-        cfg.engines [n].drvrDia, cfg.engines [n].whyte, cfg.engines [n].name);
-    printf ("\n");
-}
+        case V_STR:
+            printf ("  %8s: %s\n", p->desc, (char*)p->p);
+            break;
+
+        case V_ENG:
+            printf ("  %8s:", p->desc);
+            engDisp ((Eng_s*) p->p);
+            break;
+
+        case V_LOCO:
+            printf ("  %8s:", p->desc);
+            cfgDispLoco ((Loco_s*)p->p);
+            break;
+        }
+    }
+};
 
 // ---------------------------------------------------------
-const char *cfgFname = "koala.dat";
-
-void
-cfgLoad (void)
+char
+cfgEditLoco (
+    Loco_s      *p,
+    const char  *desc)
 {
-    FILE  *fp;
+    char s [100];
+    do  {
+        printf ("  %8s:", desc);
+        cfgDispLoco (p);
+        gets (s);
 
-    if (NULL == (fp = fopen (cfgFname, "rb+")))  {
-        perror ("cfgLoad fopen");
+        sscanf (s, "%d %f %s", & p->adr, & p->mphToDcc, p->engine);
+    } while (strlen (s) && 'q' != s[0]);
+
+    return s [0];
+};
+
+// ---------------------------------------------------------
+void
+cfgEdit (void)
+{
+    char s [100];
+    char c;
+
+    printf ("%s:\n", __func__);
+
+    for (CfgVar_s *p = cfgVarTbl; V_NONE != p->type; )  {
+        switch (p->type)  {
+        case V_INT:
+            printf ("  %8s: %6d\n", p->desc, *(int*)p->p);
+            gets (s);
+            c = s [0];
+            if (strlen (s))
+                *(int*)p->p = atoi (s);
+            else
+                p++;
+            break;
+
+        case V_STR:
+            printf ("  %8s: %s\n", p->desc, (char*)p->p);
+            gets (s);
+            c = s [0];
+            if (strlen (s))
+                strcpy ((char*)p->p, s);
+            else
+                p++;
+            break;
+
+        case V_ENG:
+            c = engEdit ((Eng_s*)p->p, p->desc);
+            p++;
+            break;
+
+        case V_LOCO:
+            c = cfgEditLoco ((Loco_s*) p->p, p->desc);
+            p++;
+            break;
+        }
+
+        if ('q' == c)
+            break;
+    }
+
+    cfgDisp ();
+};
+
+// ---------------------------------------------------------
+void
+cfgLoad (
+    const char *filename )
+{
+    printf ("%s: %s\n", __func__, filename);
+
+    FILE * fp = fopen (filename, "rb");
+    if (NULL == fp)  {
+        perror ("varsLoad - fopen");
         return;
     }
 
-    if (! fread ((void*) &cfg, sizeof(cfg), 1, fp))  {
-        perror ("cfgLoad fwrite");
+    for (CfgVar_s *p = cfgVarTbl; V_NONE != p->type; p++)  {
+         int nread = fread ((void*) p->p, p->nByte, 1, fp);
+
+        if (! nread)  {
+            printf (" %s: fread incomplete, %d %d",
+                        __func__, nread, p->nByte);
+            perror (" varsLoad - fread");
+            return;
+        }
     }
 
     fclose (fp);
 }
 
 // ---------------------------------------------------------
+#if 1
 void
-cfgSave (void)
+cfgSave (
+    const char *filename )
 {
-    FILE  *fp;
+    printf ("%s: %s\n", __func__, filename);
 
-    if (NULL == (fp = fopen (cfgFname, "ab+")))  {
-        perror ("cfgSave fopen");
+    FILE * fp = fopen (filename, "ab+");
+    if (NULL == fp)  {
+        perror ("cfgSave - fopen");
         return;
     }
 
-    rewind (fp);
-    if (! fwrite ((void*) &cfg, sizeof(cfg), 1, fp))  {
-        perror ("cfgSave fwrite");
+    for (CfgVar_s *p = cfgVarTbl; V_NONE != p->type; p++)  {
+         int nwr = fwrite ((void*) p->p, p->nByte, 1, fp);
+
+        if (! nwr)  {
+            printf (" %s: fwrite incomplete, %d %d",
+                        __func__, nwr, p->nByte);
+            perror (" cfgSave - fwrite");
+            return;
+        }
     }
 
     fclose (fp);
 }
+#endif
