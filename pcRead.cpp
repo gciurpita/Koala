@@ -247,7 +247,7 @@ _cmdMode (
             break;
 
         case 'L':
-            cfgLoad ();
+            cfgLoad (cfgFname);
             break;
 
         case 'l':
@@ -272,7 +272,7 @@ _cmdMode (
             break;
 
         case 'S':
-            cfgSave ();
+            cfgSave (cfgFname);
             break;
 
         case 't':
@@ -432,10 +432,6 @@ _pinMode (
             Serial.print   (", ");
             Serial.println (digitalRead (val));
             val = 0;
-            break;
-
-        case 'S':
-            cfgSave ();
             break;
 
         case 's':

@@ -6,7 +6,6 @@
 #include "vars.h"
 #include "utils.h"
 
-const char *filename = "/spiffs/Koala/koala.dat";
 File  file;
 
 // ---------------------------------------------------------

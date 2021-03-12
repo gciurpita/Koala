@@ -189,7 +189,7 @@ static void dispInputs (void)
     byte  encA = 10 * digitalRead (Enc_A_Dt) + digitalRead (Enc_A_Clk);
     byte  encB = 10 * digitalRead (Enc_B_Dt) + digitalRead (Enc_B_Clk);
 
-            sprintf (s,  "%02d:%02d %s", timeSec / 60, timeSec % 60, cfg.name);
+            sprintf (s,  "%02d:%02d %s", timeSec / 60, timeSec % 60, name);
 #if 0
     sprintf (s0, "bkA %03d, bkB %3d", encApos, encBpos);
 #else
@@ -254,25 +254,25 @@ eStop (void)
 // connect to jmri
 static void jmriConnect (void)
 {
-    sprintf (s0, "%d", cfg.port);
-    dispOled("JMRI connecting", cfg.host, s0, 0, CLR);
+    sprintf (s0, "%d", port);
+    dispOled("JMRI connecting", host, s0, 0, CLR);
 
 #if 0
-    sprintf (s, "JMRI connecting, %s, %s", cfg.host, s0, 0);
+    sprintf (s, "JMRI connecting, %s, %s", host, s0, 0);
     Serial.println (s);
 #endif
 
-    if (wifi.connect(cfg.host, cfg.port))  {
+    if (wifi.connect(host, port))  {
         state |= ST_JMRI;
 
         dispOled("JMRI connected", 0, 0, 0, CLR);
-        sprintf (s, "N%s", cfg.name);
+        sprintf (s, "N%s", name);
         wifiSend (s);
 
         delay (1000);
     }
 
-    dispOled(0, cfg.host, s0, 0, CLR);
+    dispOled(0, host, s0, 0, CLR);
     delay (1000);
 }
 
@@ -314,7 +314,7 @@ int jmriFuncKey (
 // connect to wifi
 static void wifiConnect (void)
 {
-    if (WL_CONNECTED == WiFi.begin (cfg.ssid, cfg.pass))  {
+    if (WL_CONNECTED == WiFi.begin (ssid, pass))  {
         state |= ST_WIFI;
 
         IPAddress ip = WiFi.localIP ();
@@ -326,14 +326,14 @@ static void wifiConnect (void)
     }
     else  {
  //     delay (1000);
-        dispOled("WiFi connecting", cfg.ssid, cfg.pass, 0, CLR);
+        dispOled("WiFi connecting", ssid, pass, 0, CLR);
 #if 0
-        sprintf ((char*)"WiFi connecting, %s, %s", cfg.ssid, cfg.pass);
+        sprintf ((char*)"WiFi connecting, %s, %s", ssid, pass);
         Serial.println (s);
 #endif
 
         delay (1000);
-        dispOled(0, cfg.ssid, cfg.pass, 0, CLR);
+        dispOled(0, ssid, pass, 0, CLR);
     }
 }
 
@@ -456,17 +456,17 @@ setup (void)
 {
     Serial.begin (115200);
 
-    Serial.print   (cfg.name);
+    Serial.print   (name);
     Serial.print   (" - ");
     Serial.println (version);
 
 #ifdef BT
-    serialBT.begin (cfg.name);
+    serialBT.begin (name);
 #endif
 
     SPIFFS.begin (true);
 #if 1
-    cfgLoad ();
+    cfgLoad (cfgFname);
 #endif
 
     // init hardware
@@ -484,7 +484,7 @@ setup (void)
     display.setColor(WHITE);
 
     // -------------------------------------
-    dispOled(cfg.name, version, 0, 0, CLR);
+    dispOled(name, version, 0, 0, CLR);
 
     state = ST_NO_LOCO;
 

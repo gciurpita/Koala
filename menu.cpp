@@ -311,7 +311,7 @@ menu (
             q   = & m [idx [lvl]];
         }
 
-        cfgSave ();
+        cfgSave (cfgFname);
         break;
 
     case M_SEL:

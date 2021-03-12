@@ -16,7 +16,7 @@
 // ----------------------------------------------------------
 // state variables
 
-Engine_s *_pLoco = NULL;
+Eng_s   *_pLoco = NULL;
 State_t  st;
 
 float    ft;
@@ -252,7 +252,7 @@ cylinderPressure (
 
     // -------------------------------------
     // update flow (lb/hr) thru throttle
-    st.thrDia   = throttleDia(st.thr, _pLoco->pipe/2);
+    st.thrDia   = throttleDia(st.thr, _pLoco->pipeDia/2);
     st.flw     = srFlow(st.thrDia, _pLoco->PSI - st.psiChst) * dTsec / 3600;
 #if 1
     st.flow    += (st.flw - st.flow) / 2;
@@ -465,7 +465,7 @@ engineRst () {
 // --------------------------------------------------------------------
 void
 engineInit (
-    Engine_s *pLoco)
+    Eng_s *pLoco)
 {
     _pLoco = pLoco;
 
