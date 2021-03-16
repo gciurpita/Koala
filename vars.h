@@ -32,13 +32,15 @@ extern Vars_s  *pVars;
 struct Loco_s {
     int     adr;
     float   mphToDcc;
-    char    engine [LOCO_LEN];
+    int     engIdx;
 };
 
 extern Loco_s locos [N_LOCO];
 
 // -------------------------------------
 // dynamic variables
+
+extern int      dccAdr;
 
 extern int      brakeInd;
 extern float    brakeIndPct;
@@ -51,6 +53,9 @@ extern int      button;
 extern int      cars;
 extern int      carLen;
 
+extern int      dccSpd;
+extern int      dccSpdLst;
+
 extern int      dir;
 
 extern int      encApos;
@@ -59,11 +64,14 @@ extern int      encBpos;
 extern int      grX10;
 
 extern int      engine;
-extern int      loco;
+extern int      locoIdx;
 
 extern unsigned long    msec;
 extern int      mass;
+
 extern float    mph;
+extern float    mphToDcc;
+
 extern int      reverser;
 
 extern int      slope;

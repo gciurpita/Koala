@@ -251,10 +251,12 @@ _cmdMode (
             break;
 
         case 'l':
-            loco = val;
-            printf ("%s: %d %d loco\n", __func__, loco, val);
-            throttle = 0;
-            reverser = MAX_REV / 2;
+            if (N_LOCO <= val)
+                printf ("%s: Error - max loco %d\n", __func__, N_LOCO - 1);
+            else  {
+                locoIdx = val;
+                printf ("%s: locoIdx %d\n", __func__, locoIdx);
+            }
             val = 0;
             break;
 

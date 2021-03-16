@@ -3,6 +3,8 @@
 
 const char *version   = "210308";
 
+int      dccAdr;
+
 int      brakeAir;
 float    brakeAirPct;
 int      brakeCfm;
@@ -14,6 +16,9 @@ int      button;
 int      cars;
 int      carLen  = 40;
 
+int      dccSpd     = 0;
+int      dccSpdLst  = 0;
+
 int      dir;
 
 int      encApos;
@@ -22,11 +27,13 @@ int      encBpos;
 int      grX10;
 
 int      engine;
-int      loco;
 
 unsigned long    msec;
 int      mass;
+
 float    mph;
+float    mphToDcc;
+
 int      reverser;
 
 int      slope;
@@ -43,7 +50,6 @@ int      whistle;
 int      wtCar;
 int      wtLoco;
 
-
 // -----------------------------------------------------------------------------
 // list of vars to display
 
@@ -56,8 +62,9 @@ Vars_s vars [] = {
 
     { & cars,     "cars" },
     { & carLen,   "carLen" },
+    { & dccSpd,   "dccSpd" },
     { & dir,      "dir" },
-    { & loco,     "loco" },
+    { & locoIdx,  "locoIdx" },
  // { & mph,      "mph" },
     { & mass,     "mass" },
     { & reverser, "reverser" },
@@ -77,7 +84,8 @@ Vars_s *pVars = & vars [0];
 // -----------------------------------------------------------------------------
 //  stored variables
 
-char     name [MAX_CHAR] = "Koala 4 Throttle";
+char     name [MAX_CHAR] = "Koala Throttle";
+int      locoIdx         = 0;
 
 // WiFi and JMRI Server Definitions
 #if 1
@@ -96,14 +104,14 @@ int      port            = 12080;
 #endif
 
 Loco_s locos [N_LOCO] = {
-    { 100, 1.2, "I-10sa"    },
-    { 200, 1.2, "G-1sas"    },
-    { 300, 1.2, "K-1"       },
-    { 400, 1.2, "T-1"       },
-    { 500, 1.2, "NA_2-6-2"  },
-    { 600, 1.2, "BigBoy"    },
-    { 700, 1.2, "catskill"  },
-    { 800, 1.2, "MILW_4-4-2"},
-    { 900, 1.2, "MILW_F-6"  },
+    { 100, 1.1, 0 },
+    { 200, 2.1, 1 },
+    { 300, 3.1, 2 },
+    { 400, 4.1, 3 },
+    { 500, 3.2, 4 },
+    { 600, 2.2, 5 },
+    { 700, 1.2, 6 },
+    { 800, 2.3, 7 },
+    { 900, 3.3, 8 },
 };
 

@@ -75,7 +75,7 @@ void
 cfgDispLoco (
     Loco_s  *p )
 {
-     printf (" %6d, %6.2f, %s\n", p->adr, p->mphToDcc, p->engine);
+     printf (" %6d %6.2f  %2d\n", p->adr, p->mphToDcc, p->engIdx);
 };
 
 // ---------------------------------------------------------
@@ -119,7 +119,7 @@ cfgEditLoco (
         cfgDispLoco (p);
         gets (s);
 
-        sscanf (s, "%d %f %s", & p->adr, & p->mphToDcc, p->engine);
+        sscanf (s, "%d %f %s", & p->adr, & p->mphToDcc, engs [p->engIdx].name);
     } while (strlen (s) && 'q' != s[0]);
 
     return s [0];

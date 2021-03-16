@@ -16,7 +16,7 @@
 // ----------------------------------------------------------
 // state variables
 
-Eng_s   *_pLoco = NULL;
+Eng_s   *_pEng = NULL;
 State_t  st;
 
 float    ft;
@@ -252,8 +252,8 @@ cylinderPressure (
 
     // -------------------------------------
     // update flow (lb/hr) thru throttle
-    st.thrDia   = throttleDia(st.thr, _pLoco->pipeDia/2);
-    st.flw     = srFlow(st.thrDia, _pLoco->PSI - st.psiChst) * dTsec / 3600;
+    st.thrDia   = throttleDia(st.thr, _pEng->pipeDia/2);
+    st.flw     = srFlow(st.thrDia, _pEng->PSI - st.psiChst) * dTsec / 3600;
 #if 1
     st.flow    += (st.flw - st.flow) / 2;
 #else
@@ -271,7 +271,7 @@ cylinderPressure (
     st.den     = st.fill / STCHEST_VOL;
     st.psiChst = interp(st.den, StDenS, StPsi, ST, 0) - PsiStd;
     st.psiChst = st.psiChst > 0           ? st.psiChst : 0; 
-    st.psiChst = st.psiChst < _pLoco->PSI ? st.psiChst : _pLoco->PSI;
+    st.psiChst = st.psiChst < _pEng->PSI ? st.psiChst : _pEng->PSI;
 
     // determine cylinder pressure
     st.mep      = mep(st.cut);      // determine cyliner pressure !
@@ -382,7 +382,7 @@ engineTe (
         __func__, dTsec, fps, throttle, cutoff);
 #endif
 
-    if (NULL == _pLoco)  {
+    if (NULL == _pEng)  {
         printf ("%s: ERROR - uninitialized loco\n", __func__);
         exit (1);
     }
@@ -410,7 +410,7 @@ engineTe (
     cylinderPressure(dTsec);
 
     st.lbFloco  = cylForce(st.psiCyl,
-        _pLoco->cylDia, _pLoco->cylStr, _pLoco->drvrDia) * mep(st.cut);
+        _pEng->cylDia, _pEng->cylStr, _pEng->drvrDia) * mep(st.cut);
 
     // correct TE for slip
     if (st.slip)  {
@@ -430,7 +430,7 @@ engineTe (
     // --------------------------------------
     // handle resistive forces at standstill and in reverse
 
-    st.locFres   = resistanceLoco(_pLoco->wtAdh, st.mph);
+    st.locFres   = resistanceLoco(_pEng->wtAdh, st.mph);
 
     st.lbFnet    = 0;
     if (st.te > st.locFres)
@@ -455,9 +455,9 @@ engineRst () {
 
     printf ("reset:");
     printf ("  cylVol %.2f", st.cylVol);
-    printf (", PSI %d",      _pLoco->PSI);
-    printf (", ftPrev %.2f",   M_PI * _pLoco->drvrDia / 12);
-    printf (", revPft %.3f", 1 / (M_PI * _pLoco->drvrDia / 12));
+    printf (", PSI %d",      _pEng->PSI);
+    printf (", ftPrev %.2f",   M_PI * _pEng->drvrDia / 12);
+    printf (", revPft %.3f", 1 / (M_PI * _pEng->drvrDia / 12));
     printf (", cycPft %.3f", st.revPft * st.cycPrev);
     printf ("\n");
 }
@@ -465,26 +465,26 @@ engineRst () {
 // --------------------------------------------------------------------
 void
 engineInit (
-    Eng_s *pLoco)
+    Eng_s *pEng)
 {
-    _pLoco = pLoco;
+    _pEng = pEng;
 
     memset ((char*) &st, 0, sizeof(State_t));
 
-    st.cylArea  = M_PI * (_pLoco->cylDia/2) * (_pLoco->cylDia/2);
-    st.cylVol   = st.cylArea * _pLoco->cylStr * CuFtPcuIn;
-    st.cycPrev  = 2 * _pLoco->numCyl;
+    st.cylArea  = M_PI * (_pEng->cylDia/2) * (_pEng->cylDia/2);
+    st.cylVol   = st.cylArea * _pEng->cylStr * CuFtPcuIn;
+    st.cycPrev  = 2 * _pEng->numCyl;
 
     st.vol      = st.cylVol / 2;
-    st.maxTe    = 0.25 * LbPton * _pLoco->wtAdh;
+    st.maxTe    = 0.25 * LbPton * _pEng->wtAdh;
     st.slpTe    = st.maxTe / 5;
 
-    st.revPft   = 1 / (M_PI * _pLoco->drvrDia / 12);
+    st.revPft   = 1 / (M_PI * _pEng->drvrDia / 12);
 
     engineRst ();
 
 #if 1
     printf ("%s: loco %s, wt %d, maxTe %ld\n",
-        __func__, _pLoco->name, _pLoco->wtAdh, st.maxTe);
+        __func__, _pEng->name, _pEng->wtAdh, st.maxTe);
 #endif
 }

@@ -204,12 +204,6 @@ physics (
     // display values
     disp (msec, dispFlag, brkMode);
 
-    // update JMRI
-    if (mphLst != mph)  {
-        sprintf (s, "TV%d", mphLst = mph);
-        wifiSend (s);
-    }
-
     msecLst = msec;
     secLst  = sec;
 }

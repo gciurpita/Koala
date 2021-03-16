@@ -11,6 +11,7 @@
 #include "brakes.h"
 #include "buttons.h"
 #include "cfg.h"
+#include "engine.h"
 #include "encoder.h"
 #include "file.h"
 #include "koala.h"
@@ -67,26 +68,27 @@ void chkLoco (void)
 {
     static int  locoLst = 0;
 
-    if (locoLst == loco)
+    if (locoLst == locoIdx)
         return;
 
-    sprintf (s, "%s: loco %d, locoLst %d,", __func__, loco, locoLst);
+    dccAdr   = locos [locoIdx].adr;
+    mphToDcc = locos [locoIdx].mphToDcc;
+
+    engineInit (& engs [locos [locoIdx].engIdx]);
+
+    sprintf (s, "%s: locoLst %d to locoIdx %d,", __func__, locoLst, locoIdx);
     Serial.println (s);
 
-    if (0 != locoLst)  {
-        state |= ST_NO_LOCO;
-        wifiSend ("MT-*<;>r");    // release all
-        wifiSend ("TS0");
-    }
+    // release all
+    wifiSend ("MT-*<;>r");
+    wifiSend ("TS0");
 
-    if (0 != loco)  {
-        state &= ~ST_NO_LOCO;
+    sprintf (s, "T%c%d", 128 < dccAdr ? 'L' : 'S', dccAdr);
+    wifiSend (s);
 
-        sprintf (s, "T%c%d", 128 < loco ? 'L' : 'S', loco);
-        wifiSend (s);
-    }
+    // reset throttle !!!!!!!!!!!!!!!!!!!!!
 
-    locoLst = loco;
+    locoLst = locoIdx;
 }
 
 // ---------------------------------------------------------
@@ -153,7 +155,7 @@ static void dispDefault (void)
     else if (ST_NO_LOCO & state)
         t = (char*) "No LOCO";
     else  {
-        sprintf (s, "%2d:%02d   %d", timeSec / 60, timeSec % 60, loco);
+        sprintf (s, "%2d:%02d   %d", timeSec / 60, timeSec % 60, locoIdx);
 #if 0
         sprintf (s0, "   %3d Thr  %s", throttle, brakeStr [brake]);
 #else
@@ -215,12 +217,7 @@ dispMenu (void)
         return;
     timeSecLst = timeSec;
 
-    if (! loco)  {
-        sprintf (s, "%2d:%02d   No Loco", timeSec / 60, timeSec % 60);
-    }
-    else  {
-        sprintf (s, "%2d:%02d  Loco %d", timeSec / 60, timeSec % 60, loco);
-    }
+    sprintf (s, "%2d:%02d  Loco %d", timeSec / 60, timeSec % 60, dccAdr);
 
     dispOled (s, 0, 0, 0, CLR);
 }
@@ -446,8 +443,19 @@ void loop()
     chkLoco ();
 
 #define DispInterval    10
-    if (! (ST_NO_LOCO & state))
+    if (! (ST_NO_LOCO & state))  {
         physics (msec, DispInterval, PrThr);
+
+        // update JMRI
+        dccSpd = mph * mphToDcc;
+
+        if (dccSpdLst != dccSpd)  {
+            dccSpdLst = dccSpd;
+
+            sprintf (s, "TV%d", dccSpd);
+            wifiSend (s);
+        }
+    }
 }
 
 // -----------------------------------------------------------------------------
