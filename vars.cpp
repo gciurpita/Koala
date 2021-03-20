@@ -1,7 +1,7 @@
 
 #include "vars.h"
 
-const char *version   = "210308";
+const char *version   = "210320";
 
 int      dccAdr;
 
@@ -88,20 +88,12 @@ char     name [MAX_CHAR] = "Koala Throttle";
 int      locoIdx         = 0;
 
 // WiFi and JMRI Server Definitions
-#if 1
 char     ssid [MAX_CHAR] = "WiFi-ssid";
 char     pass [MAX_CHAR] = "WiFi-password";
 
 char     host [MAX_CHAR] = "192.168.1.100";
 int      port            = 12080;
 
-#else
-char     ssid [MAX_CHAR] = "FiOS-DGHZ0";
-char     pass [MAX_CHAR] = "panorama123";
-
-char     host [MAX_CHAR] = "192.168.1.174";
-int      port            = 12080;
-#endif
 
 Loco_s locos [N_LOCO] = {
     { 100, 1.1, 0 },
