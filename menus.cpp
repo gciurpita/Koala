@@ -13,7 +13,6 @@ const char *sWt []    = { "Light", "Low", "Med", "Heavy" };
 
 // -------------------------------------------------------------------
 // parameters
-P_t pEng = { "Engine",  &engine,  0, 1, sOnOff, { __,   __,  up, dn,  dspP }};
 P_t pTon = { "Tonnage", &tonnage, 0, 3, sWt,    { __,   __,  up, dn,  dspP }};
 P_t pLoc = { "Loco",    &locoIdx, 0, 0, NULL,   { __,  sft, inc, dec, dspV }};
 
@@ -70,7 +69,6 @@ Menu_t menuMain [] = {
     { "Comm",    "Cfg",  T_MENU,   (void*) menuComm },
 #endif
     { "Loco",    "Addr", T_MENU,   (void*) menuAdr },
-    { "Engine",  "",     T_PARAM,  (void*) & pEng },
     { "Tonnage", "",     T_PARAM,  (void*) & pTon },
     { "Options", "",     T_NONE,   NULL },
     { "Version", version, T_NONE,   NULL },
