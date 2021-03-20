@@ -474,7 +474,8 @@ setup (void)
 
     SPIFFS.begin (true);
 #if 1
-    cfgLoad (cfgFname);
+    if (! cfgLoad (cfgFname))
+        cfgSave (cfgFname);
 #endif
 
     // init hardware
