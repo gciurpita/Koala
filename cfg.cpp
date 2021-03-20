@@ -21,6 +21,8 @@ enum CfgId_e : byte {
     C_HOST,
     C_PORT,
 
+    C_LOCO,
+
     C_L_00 = 100, C_L_01, C_L_02, C_L_03, C_L_04,
     C_L_05,       C_L_06, C_L_07, C_L_08, C_L_09,
     C_L_10,       C_L_11, C_L_12, C_L_13, C_L_14,
@@ -55,12 +57,14 @@ struct CfgVar_s {
 //  stored variables
 
 CfgVar_s cfgVarTbl [] = {
-    { C_NAME, (void*)   name,       MAX_CHAR,     V_STR,  "name" },
+    { C_NAME, (void*)   name,       MAX_CHAR,       V_STR,  "name" },
 
     { C_SSID, (void*)   ssid,       MAX_CHAR,       V_STR,  "ssid"},
     { C_PASS, (void*)   pass,       MAX_CHAR,       V_STR,  "password" },
     { C_HOST, (void*)   host,       MAX_CHAR,       V_STR,  "hostname" },
     { C_PORT, (void*) & port,       sizeof(int),    V_INT,  "port" },
+
+    { C_LOCO, (void*) & locoIdx,    sizeof(int),    V_INT,  "locoIdx" },
 
     { C_L_00, (void*) & locos [0],  sizeof(Loco_s), V_LOCO, "loco_1" },
     { C_L_01, (void*) & locos [1],  sizeof(Loco_s), V_LOCO, "loco_2" },
@@ -296,7 +300,7 @@ cfgLoad (
             break;
         }
 
-        printf (" %s: %s\n", __func__, p->desc);
+ //     printf (" %s: %s\n", __func__, p->desc);
 
         // read amount written specified by hdr.size
         int nread = fread ((void*) p->p, hdr.size, 1, fp);
