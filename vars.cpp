@@ -1,7 +1,7 @@
 
 #include "vars.h"
 
-const char *version   = "210320";
+const char *version   = "210320b";
 
 int      dccAdr;
 
@@ -48,7 +48,6 @@ int      tractEffMax;
 
 int      whistle;
 int      wtCar;
-int      wtLoco;
 
 // -----------------------------------------------------------------------------
 // list of vars to display
@@ -64,7 +63,6 @@ Vars_s vars [] = {
     { & carLen,   "carLen" },
     { & dccSpd,   "dccSpd" },
     { & dir,      "dir" },
-    { & locoIdx,  "locoIdx" },
  // { & mph,      "mph" },
     { & mass,     "mass" },
     { & reverser, "reverser" },
@@ -75,7 +73,6 @@ Vars_s vars [] = {
     { & timeSec,  "timeSec" },
     { & tonnage,  "tonnage" },
     { & wtCar,    "wtCar" },
-    { & wtLoco,   "wtLoco" },
     { 0,        NULL },
 };
 

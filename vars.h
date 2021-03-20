@@ -86,7 +86,6 @@ extern int      tractEffMax;
 
 extern int      whistle;
 extern int      wtCar;
-extern int      wtLoco;
 
 // -------------------------------------
 // stored variables
