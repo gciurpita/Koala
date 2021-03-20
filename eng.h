@@ -34,6 +34,6 @@ extern Eng_s engs [];
 // -----------------------------------------------
 void    engDisp (Eng_s *p);
 char    engEdit (Eng_s *p, const char *desc);
-Eng_s * getEng  (char* name);
+int     engGet  (char* name);
 
 #endif

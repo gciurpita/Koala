@@ -1,4 +1,4 @@
-// getLoco simulates retrieving a loco description by loco name
+// steam engine parameter table
 
 #include <stdio.h>
 #include <string.h>
@@ -77,7 +77,7 @@ engEdit (
 }
  
 // -----------------------------------------------
-Eng_s *
+int
 engGet (
     char* name)
 {
@@ -90,10 +90,10 @@ engGet (
                         M_PI * (p->blrDia / 24) * (p->blrDia / 24);
             }
 
-            return p;
+            return n;
         }
     }
 
-    printf ("%s: ERROR - %s unknown\n", __func__, name);
-    return NULL;
+ // printf ("%s: ERROR - %s unknown\n", __func__, name);
+    return -1;
 }
