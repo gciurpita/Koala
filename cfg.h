@@ -7,7 +7,7 @@ extern const char *cfgFname;
 
 // -------------------------------------
 void cfgClr  (void);
-void cfgDisp (Stream &);
+void cfgDispAll (Stream &);
 void cfgEdit (Stream &);
 int  cfgLoad (const char *filename);
 void cfgSave (const char *filename);

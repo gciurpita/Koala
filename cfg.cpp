@@ -1,6 +1,8 @@
 #include "Arduino.h"
 
+#include "cfg.h"
 #include "eng.h"
+#include "utils.h"
 #include "vars.h"
 
 const char *cfgFname = "/spiffs/koala.cfg";
@@ -122,55 +124,69 @@ void
 cfgDispLoco (
     Loco_s  *p )
 {
-     printf (" %6d %6.2f  %2d\n", p->adr, p->mphToDcc, p->engIdx);
+     printf (" %6d %6.2f  %2d  %s\n",
+        p->adr, p->mphToDcc, p->engIdx, engs [p->engIdx].name);
 };
 
 // ---------------------------------------------------------
 void
 cfgDisp (
+    Stream   &Serial,
+    CfgVar_s *p )
+{
+    switch (p->type)  {
+    case V_INT:
+        printf ("  %8s: %6d\n", p->desc, *(int*)p->p);
+        break;
+
+    case V_STR:
+        printf ("  %8s: %s\n", p->desc, (char*)p->p);
+        break;
+
+    case V_ENG:
+        printf ("  %8s:", p->desc);
+        engDisp ((Eng_s*) p->p);
+        break;
+
+    case V_LOCO:
+        printf ("  %8s:", p->desc);
+        cfgDispLoco ((Loco_s*)p->p);
+        break;
+    }
+}
+
+// ---------------------------------------------------------
+void
+cfgDispAll (
     Stream &Serial)
 {
-    printf ("%s:\n", __func__);
-
-    for (CfgVar_s *p = cfgVarTbl; V_NONE != p->type; p++)  {
-        switch (p->type)  {
-        case V_INT:
-            printf ("  %8s: %6d\n", p->desc, *(int*)p->p);
-            break;
-
-        case V_STR:
-            printf ("  %8s: %s\n", p->desc, (char*)p->p);
-            break;
-
-        case V_ENG:
-            printf ("  %8s:", p->desc);
-            engDisp ((Eng_s*) p->p);
-            break;
-
-        case V_LOCO:
-            printf ("  %8s:", p->desc);
-            cfgDispLoco ((Loco_s*)p->p);
-            break;
-        }
-    }
+    for (CfgVar_s *p = cfgVarTbl; V_NONE != p->type; p++)
+        cfgDisp (Serial, p);
 };
 
 // ---------------------------------------------------------
-char
+#define BUF_LEN   100
+
+void
 cfgEditLoco (
     Loco_s      *p,
-    const char  *desc)
+    const char  *line)
 {
-    char s [100];
-    do  {
-        printf ("  %8s:", desc);
-        cfgDispLoco (p);
-        gets (s);
+    int     adr;
+    float   mphToDcc;
+    char    engName [40];
 
-        sscanf (s, "%d %f %s", & p->adr, & p->mphToDcc, engs [p->engIdx].name);
-    } while (strlen (s) && 'q' != s[0]);
+    sscanf (line, "%d %f %s", &adr, &mphToDcc, engName);
 
-    return s [0];
+    int idx = engGet (engName);
+
+    if (0 > idx)
+        printf (" %s: Error - unknown engine - %s\n", __func__, engName);
+    else  {
+        p->adr      = adr;
+        p->mphToDcc = mphToDcc;
+        p->engIdx   = idx;
+    }
 };
 
 // ---------------------------------------------------------
@@ -178,31 +194,48 @@ void
 cfgEdit (
     Stream &Serial)
 {
-    char s [100];
+    char s [BUF_LEN];
     char c;
+    CfgVar_s *p = cfgVarTbl;
 
     printf ("%s:\n", __func__);
 
-    for (CfgVar_s *p = cfgVarTbl; V_NONE != p->type; )  {
+    while (1)  {
+        // handle wrap
+        if (C_NONE == p->id)  {
+            printf (" %s: wrap\n", __func__);
+            p = cfgVarTbl;
+        }
+
+        cfgDisp (Serial, p);
+
+        // check input
+        readLine (s, BUF_LEN);
+        c = s [0];
+
+        if (0 == c)  {  // empty string
+            p++;
+            continue;
+        }
+        else if ('q' == c)  {
+            printf (" %s: not saved\n", __func__);
+            break;
+        }
+
+        else if ('s' == c)  {
+            cfgSave (cfgFname);
+            continue;
+        }
+
+        // process new input
         switch (p->type)  {
         case V_INT:
-            printf ("  %8s: %6d\n", p->desc, *(int*)p->p);
-            gets (s);
-            c = s [0];
-            if (strlen (s))
+            if (isdigit (c))
                 *(int*)p->p = atoi (s);
-            else
-                p++;
             break;
 
         case V_STR:
-            printf ("  %8s: %s\n", p->desc, (char*)p->p);
-            gets (s);
-            c = s [0];
-            if (strlen (s))
-                strcpy ((char*)p->p, s);
-            else
-                p++;
+            strcpy ((char*)p->p, s);
             break;
 
         case V_ENG:
@@ -211,16 +244,13 @@ cfgEdit (
             break;
 
         case V_LOCO:
-            c = cfgEditLoco ((Loco_s*) p->p, p->desc);
-            p++;
+            cfgEditLoco ((Loco_s*) p->p, s);
             break;
         }
 
-        if ('q' == c)
-            break;
     }
 
-    cfgDisp (Serial);
+    cfgDispAll (Serial);
 };
 
 // ---------------------------------------------------------
