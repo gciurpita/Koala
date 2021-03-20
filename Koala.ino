@@ -22,7 +22,7 @@
 #include "physics.h"
 #include "vars.h"
 
-unsigned int debug = 1;
+unsigned int debug = 0;
 
 // -----------------------------------------------------------------------------
 // Initialize the OLED display using Wire library
@@ -66,15 +66,16 @@ char s [S_SIZE];
 //     send dispatch/release to jmri
 void chkLoco (void)
 {
-    static int  locoLst = 0;
+    static int  locoLst = -1;
 
     if (locoLst == locoIdx)
         return;
 
     dccAdr   = locos [locoIdx].adr;
     mphToDcc = locos [locoIdx].mphToDcc;
+    pEng     = & engs [locos [locoIdx].engIdx];
 
-    engineInit (& engs [locos [locoIdx].engIdx]);
+    engineInit ();
 
     sprintf (s, "%s: locoLst %d to locoIdx %d,", __func__, locoLst, locoIdx);
     Serial.println (s);
@@ -144,6 +145,7 @@ void dispOled(
 
 // ---------------------------------------------------------
 // default display screen
+#if 0
 static void dispDefault (void)
 {
     char *t = NULL;
@@ -183,6 +185,7 @@ static void dispDefault (void)
     dispOled (s, s0, s1, 0, CLR);
 #endif
 }
+#endif
 
 // ---------------------------------------------------------
 // display inputs
@@ -409,21 +412,46 @@ void loop()
     }
 
     // -------------------------------------
-    // display default screen
-    else if (! (ST_CFG & state))  {
-        if (ST_MENU & state)  {
+    else if (ST_MENU & state)  {
             menu (M_NULL);
-        }
-        else if (ST_DVT & state)
-            dispInputs ();
-        else
-            dispDefault ();
     }
+    else if (ST_DVT & state)
+            dispInputs ();
 
     // -------------------------------------
-    // scan interfaces
-    potsRead ();
-    buttonsChk ();
+    // run engine
+    else  {
+        potsRead ();
+        buttonsChk ();
+
+        chkLoco ();
+
+#define DispInterval    0
+        physics (msec, DispInterval, PrThr);
+
+        // update JMRI
+        dccSpd = mph * mphToDcc;
+        if (dccSpdLst != dccSpd)  {
+            printf ("%s: dccSpd %d, mph %.1f, mphToDcc %.2f\n",
+                __func__, dccSpd, mph, mphToDcc);
+            dccSpdLst = dccSpd;
+
+            sprintf (s, "TV%d", dccSpd);
+            wifiSend (s);
+        }
+
+#if 0
+        dispDefault ();
+#else
+        sprintf (s, "%2d:%02d   %d", timeSec / 60, timeSec % 60, dccAdr);
+        sprintf (s0, "   %3d Thr  brk?", throttle);
+        sprintf (s1, "   %3d Spd  %s", int(mph),
+                DIR_NEUTRAL == dir ? "Neutral"
+                    : DIR_FOR == dir ? "Forward" : "Reverse");
+
+        dispOled (   s, s0, s1, 0, CLR);
+#endif
+    }
 
     // -------------------------------------
     // scan external interfaces
@@ -437,25 +465,6 @@ void loop()
         res = pcRead (serialBT);
 #endif
     state = res ? state | ST_CFG : state & ~ST_CFG;
-
-    // -------------------------------------
-    // update JMRI
-    chkLoco ();
-
-#define DispInterval    10
-    if (! (ST_NO_LOCO & state))  {
-        physics (msec, DispInterval, PrThr);
-
-        // update JMRI
-        dccSpd = mph * mphToDcc;
-
-        if (dccSpdLst != dccSpd)  {
-            dccSpdLst = dccSpd;
-
-            sprintf (s, "TV%d", dccSpd);
-            wifiSend (s);
-        }
-    }
 }
 
 // -----------------------------------------------------------------------------
@@ -495,7 +504,7 @@ setup (void)
     // -------------------------------------
     dispOled(name, version, 0, 0, CLR);
 
-    state = ST_NO_LOCO;
+    state = 0;
 
     // if button pressed during startup, skip wifi/jmri connections
     buttonsChk ();
