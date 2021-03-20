@@ -13,13 +13,13 @@ File  file;
 void
 fileDir (void)
 {
-    Serial.println (__func__);
+    printf ("%s:\n", __func__);
 
     File root = SPIFFS.open ("/");
     File f;
 
     while ((f = root.openNextFile ()))  {
-        Serial.println (f.name ());
+        printf ("  %6d  %s\n", f.size(), f.name ());
     }
 }
 
