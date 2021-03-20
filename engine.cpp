@@ -9,6 +9,7 @@
 # include <string.h>
 #endif
 
+#include "eng.h"
 #include "engine.h"
 #include "koala.h"
 #include "rollRes.h"
@@ -16,7 +17,6 @@
 // ----------------------------------------------------------
 // state variables
 
-Eng_s   *_pEng = NULL;
 State_t  st;
 
 float    ft;
@@ -252,8 +252,8 @@ cylinderPressure (
 
     // -------------------------------------
     // update flow (lb/hr) thru throttle
-    st.thrDia   = throttleDia(st.thr, _pEng->pipeDia/2);
-    st.flw     = srFlow(st.thrDia, _pEng->PSI - st.psiChst) * dTsec / 3600;
+    st.thrDia   = throttleDia(st.thr, pEng->pipeDia/2);
+    st.flw     = srFlow(st.thrDia, pEng->PSI - st.psiChst) * dTsec / 3600;
 #if 1
     st.flow    += (st.flw - st.flow) / 2;
 #else
@@ -271,7 +271,7 @@ cylinderPressure (
     st.den     = st.fill / STCHEST_VOL;
     st.psiChst = interp(st.den, StDenS, StPsi, ST, 0) - PsiStd;
     st.psiChst = st.psiChst > 0           ? st.psiChst : 0; 
-    st.psiChst = st.psiChst < _pEng->PSI ? st.psiChst : _pEng->PSI;
+    st.psiChst = st.psiChst < pEng->PSI ? st.psiChst : pEng->PSI;
 
     // determine cylinder pressure
     st.mep      = mep(st.cut);      // determine cyliner pressure !
@@ -382,12 +382,12 @@ engineTe (
         __func__, dTsec, fps, throttle, cutoff);
 #endif
 
-    if (NULL == _pEng)  {
+    if (NULL == pEng)  {
         printf ("%s: ERROR - uninitialized loco\n", __func__);
         exit (1);
     }
 
-    if (debug)
+    if (3 < debug)
         printf (" %s: dTsec %.1f, throttle %d, cutoff %d\n",
                 __func__, dTsec, throttle, cutoff);
 
@@ -410,7 +410,7 @@ engineTe (
     cylinderPressure(dTsec);
 
     st.lbFloco  = cylForce(st.psiCyl,
-        _pEng->cylDia, _pEng->cylStr, _pEng->drvrDia) * mep(st.cut);
+        pEng->cylDia, pEng->cylStr, pEng->drvrDia) * mep(st.cut);
 
     // correct TE for slip
     if (st.slip)  {
@@ -430,7 +430,7 @@ engineTe (
     // --------------------------------------
     // handle resistive forces at standstill and in reverse
 
-    st.locFres   = resistanceLoco(_pEng->wtAdh, st.mph);
+    st.locFres   = resistanceLoco(pEng->wtAdh, st.mph);
 
     st.lbFnet    = 0;
     if (st.te > st.locFres)
@@ -453,38 +453,36 @@ engineRst () {
     st.vol      = 0;
     st.fps      = 0;
 
-    printf ("reset:");
+    printf ("%s:",           __func__);
     printf ("  cylVol %.2f", st.cylVol);
-    printf (", PSI %d",      _pEng->PSI);
-    printf (", ftPrev %.2f",   M_PI * _pEng->drvrDia / 12);
-    printf (", revPft %.3f", 1 / (M_PI * _pEng->drvrDia / 12));
+    printf (", PSI %d",      pEng->PSI);
+    printf (", ftPrev %.2f", M_PI * pEng->drvrDia / 12);
+    printf (", revPft %.3f", 1 / (M_PI * pEng->drvrDia / 12));
     printf (", cycPft %.3f", st.revPft * st.cycPrev);
+    printf ("  %s",          pEng->name);
     printf ("\n");
 }
 
 // --------------------------------------------------------------------
 void
-engineInit (
-    Eng_s *pEng)
+engineInit (void)
 {
-    _pEng = pEng;
-
     memset ((char*) &st, 0, sizeof(State_t));
 
-    st.cylArea  = M_PI * (_pEng->cylDia/2) * (_pEng->cylDia/2);
-    st.cylVol   = st.cylArea * _pEng->cylStr * CuFtPcuIn;
-    st.cycPrev  = 2 * _pEng->numCyl;
+    st.cylArea  = M_PI * (pEng->cylDia/2) * (pEng->cylDia/2);
+    st.cylVol   = st.cylArea * pEng->cylStr * CuFtPcuIn;
+    st.cycPrev  = 2 * pEng->numCyl;
 
     st.vol      = st.cylVol / 2;
-    st.maxTe    = 0.25 * LbPton * _pEng->wtAdh;
+    st.maxTe    = 0.25 * LbPton * pEng->wtAdh;
     st.slpTe    = st.maxTe / 5;
 
-    st.revPft   = 1 / (M_PI * _pEng->drvrDia / 12);
+    st.revPft   = 1 / (M_PI * pEng->drvrDia / 12);
 
     engineRst ();
 
 #if 1
     printf ("%s: loco %s, wt %d, maxTe %ld\n",
-        __func__, _pEng->name, _pEng->wtAdh, st.maxTe);
+        __func__, pEng->name, pEng->wtAdh, st.maxTe);
 #endif
 }
