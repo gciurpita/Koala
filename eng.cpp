@@ -22,6 +22,8 @@ Eng_s engs [N_ENG] = {
     {  70.0, 27.0, 32.0,  2,  320,  160,  247,  189, 107.7,   0.0,   0.0,      0, 0.0, "4-8-4",   "N&W"       },
 };
 
+Eng_s   *pEng = NULL;
+
 // -----------------------------------------------
 void
 engDisp (
@@ -40,7 +42,7 @@ engDisp (
 
     printf (" %3d",  p->PSI);
     printf (" %3d",  p->wtAdh);
-    printf (" %3d",  p->wtTot);
+    printf (" %3d",  p->wtLoco);
     printf (" %3d",  p->wtTndr);
 
     printf (" %5.1f", p->grate);
@@ -69,7 +71,7 @@ engEdit (
 
         sscanf (s, "%f %f %f %d %d %d %d %d %f %f %f %f %f %s %s",
             &p->drvrDia, &p->cylDia, &p->cylStr,  &p->numCyl, &p->PSI, 
-            &p->wtAdh,   &p->wtTot,  &p->wtTndr,  &p->grate,  &p->blrLen, 
+            &p->wtAdh,   &p->wtLoco, &p->wtTndr,  &p->grate,  &p->blrLen, 
             &p->blrDia,  &p->blrVol, &p->pipeDia,  p->whyte,   p->name );
     } while (strlen (s) && 'q' != s[0]);
 

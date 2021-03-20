@@ -14,7 +14,7 @@ struct Eng_s {
 
     int    PSI;
     int    wtAdh;
-    int    wtTot;
+    int    wtLoco;
     int    wtTndr;
 
     float  grate;       // unused
@@ -30,6 +30,8 @@ struct Eng_s {
 
 // -------------------------------------
 extern Eng_s engs [];
+
+extern Eng_s   *pEng;
 
 // -----------------------------------------------
 void    engDisp (Eng_s *p);
