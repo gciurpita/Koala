@@ -14,32 +14,6 @@ enum { CmdMode, CfgMode, PinMode };
 static int _mode    = CmdMode;
 static int _modeLst = CmdMode;
 
-#if 0
-// -----------------------------------------------------------------------------
-static void
-_dispEeVars (
-    Stream &Serial)
-{
-    EeVar_t  *e = pEeVars;
-    int       loc = 0;
-
-    sprintf (s, "%s:", __func__);
-    Serial.println (s);
-
-    for (int i = 0; NULL != e->p; i++, loc += e->nByte, e++) {
-        sprintf (s, "    %2d %4d:", e->nByte, loc);
-        Serial.print (s);
-
-        if (V_STR == e->type)
-            sprintf (s, " %10s - %s", e->desc, (char*)e->p);
-        else
-            sprintf (s, " %10s - %d", e->desc, *(int *)e->p);
-        Serial.println (s);
-    }
-}
-
-#endif
-
 // -----------------------------------------------------------------------------
 static void
 _dispVars (
@@ -56,83 +30,6 @@ _dispVars (
     }
 }
 
-// ---------------------------------------------------------
-// edit throttle parameters thru serial monitor
-#if 0
-#define MAX_BUF 40
-int  _cfgHdr = 0;
-
-static int
-_cfgMode (
-    Stream &Serial)
-{
-    static int  stRead = 0;
-    static int  idx    = 0;
-    static char buf [MAX_BUF] = {};
-
-    static EeVar_t   *e  = pEeVars;
-
-    if (! _cfgHdr++) {
-        sprintf (s, "%s: enter 'q' to exit", __func__);
-        Serial.println (s);
-    }
-
-    if (stRead)  {
-        if (Serial.available()) {
-            char c   = Serial.read ();
-
-            if (0 == idx)  {    // check for char on first column
-                switch (c)  {
-                case 'q':
-                    cfgSave ();
-                    Serial.println ("pcRead: switch to Cmd mode");
-                    _mode = CmdMode;             // what about ssid/password
-                    return 1;
-
-                case 'S':
-                    cfgSave ();
-                    return 0;
-
-                default:
-                    break;
-                }
-            }
-
-        //  if ('\n' == c && ! cnt++)  {    // ignore very first \n
-            if ('\n' == c)  {
-                if (0 < idx)  {
-                    buf [idx] = 0;
-
-                    if (V_STR == e->type)
-                        strcpy ((char*) e->p, buf);
-                    else
-                        *(int*)e->p = atoi (buf);
-                }
-                else  {
-                    e++;
-                    e = NULL == e->p ? pEeVars : e;
-                }
-                stRead = idx = 0;
-                return 1;
-            }
-
-            buf [idx++] = (char) c;
-        }
-
-    }
-    else  {
-        if (V_STR == e->type)
-            sprintf (s, " > %10s: %s", e->desc, (char*)e->p);
-        else
-            sprintf (s, " > %10s: %d", e->desc, *(int*) e->p);
-        Serial.println (s);
-        stRead ++;
-    }
-
-    return 1;
-}
-#endif
-
 // -----------------------------------------------------------------------------
 static void
 _cmdModeHelp (
@@ -142,10 +39,10 @@ _cmdModeHelp (
     Serial.println ("   # B - set button #");
     Serial.println ("   # c - set cars to #");
     Serial.println ("   # b - set train brake to #");
-    Serial.println ("     d - list SPIFFS files");
     Serial.println ("     D - set debug to #");
     Serial.println ("     E - display configuration variables");
     Serial.println ("     e - switch to cfgMode");
+    Serial.println ("     F - list SPIFFS files");
     Serial.println ("     f - toggle decoder function #");
     Serial.println ("   # I - set independent brake to #");
     Serial.println ("     L - load configuration");
@@ -221,20 +118,17 @@ _cmdMode (
             debug = val;
             break;
 
-        case 'd':
+        case 'F':
             fileDir ();
             break;
 
-        case 'E':
-            cfgDisp (Serial);
+        case 'd':
+            cfgDispAll (Serial);
             break;
 
-#if 0
-        case 'e':
-            _cfgHdr = 0;
-            _mode = CfgMode;
+        case 'E':
+            cfgEdit (Serial);
             break;
-#endif
 
         case 'f':
             func     = val;
@@ -485,9 +379,6 @@ pcRead (
         _modeLst = _mode;
 
         switch (_mode)  {
-        case CfgMode:
-            break;
-
         case CmdMode:
             _cmdModeHelp (Serial);
             break;
@@ -500,11 +391,6 @@ pcRead (
 
     // invoke mode specific routine
     switch (_mode)  {
-#if 0
-    case CfgMode:
-        return _cfgMode (Serial);
-#endif
-
     case PinMode:
         return _pinMode (Serial);
 
