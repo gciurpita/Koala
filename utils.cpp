@@ -66,13 +66,13 @@ readLine (
     char  *s,
     int    size )
 {
-    char c;
     int  idx = 0;
     do  {
         while (! Serial.available ())
             ;
-        s [idx++] = c = Serial.read ();
-    } while ('\n' != c  && idx < size);
+        s [idx] = Serial.read ();
+    } while ('\n' != s [idx++] && idx < size);
+    s [idx-1] = 0;
 
     return idx;
 }
