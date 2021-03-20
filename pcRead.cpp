@@ -225,11 +225,11 @@ _cmdMode (
             fileDir ();
             break;
 
-#if 0
         case 'E':
-            _dispEeVars (Serial);
+            cfgDisp (Serial);
             break;
 
+#if 0
         case 'e':
             _cfgHdr = 0;
             _mode = CfgMode;
