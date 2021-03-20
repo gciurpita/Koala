@@ -84,7 +84,7 @@ disp (
     if (! constants)  {
         constants++;
         printf ("%s: wtLoco %d, wtCar %d, wtTot %d, mass %d\n",
-            __func__, wtLoco, wtCar, wtTot, mass);
+            __func__, pEng->wtLoco, wtCar, wtTot, mass);
         brakesMdlPr ();
     }
 
@@ -159,7 +159,7 @@ physics (
 #endif
 
     tonnage = (cars * wtCar);
-    wtTot   = wtLoco + tonnage;
+    wtTot   = pEng->wtLoco + tonnage;
 
     // -------------------------------------
     // forces
@@ -175,17 +175,14 @@ physics (
  // force     -= dir * whRes;
     force     -= whRes;
 
-    if (0) printf (" %s: rf %.2f, tons %.0f, whRes %.2f\n",
-        __func__, rf, tons, whRes);
-
     // grade
     grF    = wtTot * grX10 / 1000;      // slope
  // force -= dir * grF;
     force -= grF;
 
     // brakes
-    brkF  = (cars * wtCar) * NBR * brakeAirPct / 100;
-    brkF +=         wtLoco * NBR * brakeIndPct / 100;
+    brkF  = (cars * wtCar)       * NBR * brakeAirPct / 100;
+    brkF +=         pEng->wtLoco * NBR * brakeIndPct / 100;
 
     if (0 == mph && ABS(force) < brkF)  // shouldn't force car to move
         brkF =  SGN(force) * force;
@@ -199,10 +196,26 @@ physics (
     fps  += acc * dMsec / 1000;
     mph   = fps / MphTfps;
 
-    if (0) printf (" %s: mass %d\n", __func__, mass);
+    if (debug)  {
+        printf (" %s:", __func__);
+
+        if (2 == debug)  {
+            printf (" cars %d, wtCar %d, wtLoco %d", cars, wtCar, pEng->wtLoco);
+            printf (" tonnage %d, mass %d", tonnage, mass);
+        }
+        else if (1 == debug)  {
+            printf (" TE %6d, grF %.1f, brkF %.1f", tractEff, grF, brkF);
+            printf (" rf %.2f, tons %.0f, whRes %.2f", rf, tons, whRes);
+            printf (" force %.2f, mass %d", force, mass);
+            printf (" acc %.2f, fps %.2f, mph %.2f", acc, fps, mph);
+        }
+
+        printf ("\n");
+    }
 
     // display values
-    disp (msec, dispFlag, brkMode);
+    if (dispFlag)
+        disp (msec, dispFlag, brkMode);
 
     msecLst = msec;
     secLst  = sec;
