@@ -17,7 +17,7 @@
 // ----------------------------------------------------------
 // state variables
 
-State_t  st;
+State_t  st = {};
 
 float    ft;
 int      nCyc;
@@ -178,7 +178,16 @@ srFlow (
 {
     const float K = 2000 / .25;
     const float P = 300;
+#if 0
+    float res = (K * dia * dia) * psi / P;
+
+    printf ("%s: res %.1f, dia %.1f, psi %.1f, K %.1f, P = %.1f\n",
+        __func__, res, dia, psi, K, P);
+
+    return res;
+#else
     return (K * dia * dia) * psi / P;
+#endif
 }
 
 // --------------------------------------------------------------------
@@ -260,14 +269,21 @@ cylinderPressure (
     st.flow    +=  st.flw;
 #endif
 
-    if (DBG_CYLPRESS & debug)
-        printf ("%s: thrDia %.1f, flw %.1f, flow %.1f  %s\n",
-            __func__, st.thrDia, st.flw, st.flow, pEng->name);
+    if (DBG_CYLPRESS & debug)  {
+        printf ("%s: dia %.1f thr %.1f, pipe %.1f\n", __func__, st.thrDia, st.thr, pEng->pipeDia);
+        printf ("%s: flw %.1f PSI %d, psiCh %.1f, dTsec %.1f\n",
+            __func__, st.flw, pEng->PSI, st.psiChst, dTsec);
+        printf ("%s: flow %.1f  %s\n", __func__, st.flow, pEng->name);
+        printf ("%s:", __func__);
+    }
 
     // -------------------------------------
     // update amount of steam in steam chest 
     st.fill    += st.flow;                      // flow from throttle
     st.fill    -= st.consume;
+
+    if (DBG_CYLPRESS & debug)
+        printf (" fill %.1f, consume %.1f", st.fill, st.consume);
 
     // -------------------------------------
     // determine steam chest pressure
@@ -281,14 +297,8 @@ cylinderPressure (
     st.mep      = mep(st.cut);      // determine cyliner pressure !
     st.psiCyl   = st.mep * st.psiChst;
 
-#if 0
-    printf (" %120s:", __func__);
-    printf ("  %5.6f rpm ", st.rpm);
-    printf ("  %5.2f dTsec ", dTsec);
-    printf ("  %5.2f cylVol ", st.cylVol);
-    printf ("  %5.2f cut ", st.cut);
-    printf ("\n");
-#endif
+    if (DBG_CYLPRESS & debug)
+        printf (" den %.1f, psiCh %.1f\n", st.den, st.psiChst);
 }
 
 // --------------------------------------------------------------------
@@ -378,12 +388,6 @@ engineTe (
     int   throttle,
     int   cutoff )
 {
- // float res;
-#if 0
-    printf (" %s: dT %.2f, fps %.3f, thr %d, cut %d \n",
-        __func__, dTsec, fps, throttle, cutoff);
-#endif
-
     if (NULL == pEng)  {
         printf ("%s: ERROR - uninitialized loco\n", __func__);
         exit (1);
@@ -481,10 +485,10 @@ engineInit (void)
 
     st.revPft   = 1 / (M_PI * pEng->drvrDia / 12);
 
-    engineRst ();
-
 #if 1
     printf ("%s: loco %s, wt %d, maxTe %ld\n",
         __func__, pEng->name, pEng->wtAdh, st.maxTe);
 #endif
+
+    engineRst ();
 }
