@@ -22,7 +22,7 @@
 #include "physics.h"
 #include "vars.h"
 
-unsigned int debug = 0;
+unsigned int debug = DBG_ENGINE;
 
 // -----------------------------------------------------------------------------
 // Initialize the OLED display using Wire library
