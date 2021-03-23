@@ -56,8 +56,6 @@ float grF;              // grade
 float acc;
 float force;
 
-int   cutoff;
-
 int   a[10];
 float fps = 0;          // should be initialized when loco set
 int   b[10];
@@ -73,12 +71,15 @@ int mins;
 
 // ---------------------------------------------------------
 void
+#if 0
 disp (
     unsigned long msec,
     int           flag,
     int           brkMode )
+#else
+disp (void)
+#endif
 {
-    static unsigned int  cnt    = -1;
     static char constants = 0;
 
     if (! constants)  {
@@ -90,57 +91,51 @@ disp (
 
     mins  = msec / 60000;
     sec   = msec % 60000;
-    cnt++;
 
-#if 0
-    if (! (sec % 1000) || ! (cnt % flag))  {
-#else
-    if (! (cnt % flag))  {
-#endif
-        if (! (hdr++ % 10))  {
-            printf (" %7s", "time");
-            printf (" %4s %3s %3s", "cars", "cut", "thr");
-            printf (" %6s %6s %6s %6s", "drawBr", "res", "grF", "brF");
-            printf (" %5s %6s %4s %4s", "force", "acc", "fps", "mph");
+    if (! (hdr++ % 10))  {
+        printf (" %7s", "time");
+        printf (" %4s %3s %3s", "cars", "cut", "thr");
+        printf (" %6s %6s %6s %6s", "drawBr", "res", "grF", "brF");
+        printf (" %5s %6s %6s %4s", "force", "acc", "fps", "mph");
 
-            if (brkMode)
-                brakesPr (1);
-            else
-                enginePr (1);
-            printf ("\n");
-        }
-
-        // time
-        printf (" %2d:%04.1f", mins, sec / 1000.0);
-
-        printf (" %4d", cars);
-        printf (" %3d", cutoff);
-        printf (" %s%2d", 0>dir ? "-" : " ", throttle);
-        printf (" %6d", tractEff);
-        printf (10 > whRes      ? " %6.2f" : " %6.0f", whRes);
-        printf (" %6.1f", grF);
-        printf (10 > brkF       ? " %6.2f" : " %6.0f", brkF);
-        printf (10 > ABS(force) ? " %5.2f" : " %5.0f", force);
-
-        printf (" %6.2f", acc);
-        printf (10 > fps ? " %4.4f" : " %4.0f", fps);
-        printf (10 > mph ? " %4.2f" : " %4.1f", mph);
-
-        if (brkMode)
-            brakesPr (0);
-        else
-            enginePr (0);
-
+        if (DBG_BRAKE & debug)
+            brakesPr (1);
+        else if (DBG_ENGINE & debug)
+            enginePr (1);
         printf ("\n");
     }
+
+    // time
+    printf (" %2d:%04.1f", mins, sec / 1000.0);
+
+    printf (" %4d", cars);
+    printf (" %s%2d", 0>dir ? "-" : " ", cutoff);
+    printf (" %3d", throttle);
+
+    printf (" %6d", tractEff);
+    printf (10 > whRes      ? " %6.2f" : " %6.0f", whRes);
+    printf (" %6.1f", grF);
+    printf (10 > brkF       ? " %6.2f" : " %6.0f", brkF);
+
+    printf (10 > ABS(force) ? " %5.2f" : " %5.0f", force);
+    printf (" %6.2f", acc);
+    printf (10 > fps ? " %6.4f" : " %6.0f", fps);
+    printf (10 > mph ? " %4.2f" : " %4.1f", mph);
+
+    if (DBG_BRAKE & debug)
+        brakesPr (0);
+    else if (DBG_ENGINE & debug)
+        enginePr (0);
+
+    printf ("\n");
 }
 
 // ---------------------------------------------------------
 void
 physics (
-    unsigned long msec,
-    int           dispFlag,
-    int           brkMode )
+unsigned long msec,
+int           dispFlag,
+int           brkMode )
 {
     if (0)
         printf ("%s: %ld msec, flag %d, brkMode %d\n",
@@ -159,7 +154,7 @@ physics (
 #endif
 
     tonnage = (cars * wtCar);
-    wtTot   = pEng->wtLoco + tonnage;
+    wtTot   = tonnage + pEng->wtLoco + pEng->wtTndr;
 
     // -------------------------------------
     // forces
@@ -196,26 +191,13 @@ physics (
     fps  += acc * dMsec / 1000;
     mph   = fps / MphTfps;
 
-    if (debug)  {
-        printf (" %s:", __func__);
+    // -------------------------------------
+    static unsigned long msecLst2 = 0;
 
-        if (2 == debug)  {
-            printf (" cars %d, wtCar %d, wtLoco %d", cars, wtCar, pEng->wtLoco);
-            printf (" tonnage %d, mass %d", tonnage, mass);
-        }
-        else if (1 == debug)  {
-            printf (" TE %6d, grF %.1f, brkF %.1f", tractEff, grF, brkF);
-            printf (" rf %.2f, tons %.0f, whRes %.2f", rf, tons, whRes);
-            printf (" force %.2f, mass %d", force, mass);
-            printf (" acc %.2f, fps %.2f, mph %.2f", acc, fps, mph);
-        }
-
-        printf ("\n");
+    if (debug && ((msec - msecLst2) > 1000))  {
+        msecLst2 = msec;
+        disp ();
     }
-
-    // display values
-    if (dispFlag)
-        disp (msec, dispFlag, brkMode);
 
     msecLst = msec;
     secLst  = sec;
