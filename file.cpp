@@ -28,7 +28,7 @@ fileDir (void)
 void
 fileDelete (void)
 {
-    Serial.println (__func__);
+    printf ("%s: enter 'D' to delete file\n", __func__);
 
     File root = SPIFFS.open ("/");
     File f;
