@@ -77,7 +77,7 @@ static char getKey (char tbl [KP_ROW_SIZE] [KP_COL_SIZE] )
     {
         code = tbl [row][col];
 
-        if (1 < debug)
+        if (DBG_BUT & debug)
             printf ("%s: code %d, row %x, col %x\n",
                 __func__, code, row, col); 
     }
