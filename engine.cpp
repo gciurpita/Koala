@@ -260,6 +260,10 @@ cylinderPressure (
     st.flow    +=  st.flw;
 #endif
 
+    if (DBG_CYLPRESS & debug)
+        printf ("%s: thrDia %.1f, flw %.1f, flow %.1f  %s\n",
+            __func__, st.thrDia, st.flw, st.flow, pEng->name);
+
     // -------------------------------------
     // update amount of steam in steam chest 
     st.fill    += st.flow;                      // flow from throttle
@@ -314,8 +318,6 @@ enginePr (
     int   hdr )
 {
     if (hdr)  {
-        printf ("  ");
-
         printf (" %5s", "cps");
         printf (" %5s", "cyc");
         printf (" %s",  "C");
@@ -387,7 +389,7 @@ engineTe (
         exit (1);
     }
 
-    if (3 < debug)
+    if (1 == debug)
         printf (" %s: dTsec %.1f, throttle %d, cutoff %d\n",
                 __func__, dTsec, throttle, cutoff);
 
