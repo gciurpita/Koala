@@ -52,6 +52,7 @@ extern int      button;
 
 extern int      cars;
 extern int      carLen;
+extern int      cutoff;
 
 extern int      dccSpd;
 extern int      dccSpdLst;

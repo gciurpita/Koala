@@ -16,6 +16,8 @@ int      button;
 int      cars;
 int      carLen  = 40;
 
+int      cutoff;
+
 int      dccSpd     = 0;
 int      dccSpdLst  = 0;
 
