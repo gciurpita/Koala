@@ -65,7 +65,6 @@ int   mphLst = 0;
 float whRes;
 int   wtTot;
 
-int secLst = 0;
 int sec;
 int mins;
 
@@ -141,8 +140,11 @@ int           brkMode )
         printf ("%s: %ld msec, flag %d, brkMode %d\n",
             __func__, msec, dispFlag, brkMode);
 
-
     dMsec   = msec - msecLst;
+    msecLst = msec;
+    if (dMsec > 1000)  {
+        return;
+    }
 
     _reverser ();
     brakes (dMsec);
@@ -154,7 +156,7 @@ int           brkMode )
 #endif
 
     tonnage = (cars * wtCar);
-    wtTot   = tonnage + pEng->wtLoco + pEng->wtTndr;
+    wtTot   = tonnage + (pEng->wtLoco + pEng->wtTndr) * LbPton;
 
     // -------------------------------------
     // forces
@@ -194,11 +196,13 @@ int           brkMode )
     // -------------------------------------
     static unsigned long msecLst2 = 0;
 
+#if 0
     if (debug && ((msec - msecLst2) > 1000))  {
         msecLst2 = msec;
         disp ();
     }
-
-    msecLst = msec;
-    secLst  = sec;
+#else
+    if (debug)
+        disp ();
+#endif
 }
