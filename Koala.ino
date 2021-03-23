@@ -55,9 +55,10 @@ const char * stateStr [] = {
 };
 #define N_STATE_STR  (sizeof(stateStr)/sizeof(char *))
 
-char s0[30];
-char s1[30];
-char s2[30];
+char s0 [MAX_CHAR];
+char s1 [MAX_CHAR];
+char s2 [MAX_CHAR];
+char s3 [MAX_CHAR];
 char s [S_SIZE];
 
 // ---------------------------------------------------------
@@ -444,12 +445,13 @@ void loop()
         dispDefault ();
 #else
         sprintf (s, "%2d:%02d   %d", timeSec / 60, timeSec % 60, dccAdr);
-        sprintf (s0, "   %3d Thr  brk?", throttle);
-        sprintf (s1, "   %3d Spd  %s", int(mph),
-                DIR_NEUTRAL == dir ? "Neutral"
-                    : DIR_FOR == dir ? "Forward" : "Reverse");
+        sprintf (s0, " %3d Thr  %s%02d Rev",
+            throttle, DIR_REV == dir ? "-" : " ", cutoff);
 
-        dispOled (   s, s0, s1, 0, CLR);
+        sprintf (s1, "  %5s %5s", airBrkStr [brakeAir], indBrkStr [brakeInd]);
+        sprintf (s2, "  %3d MPH  %3d DCC-Spd", int(mph), dccSpd);
+
+        dispOled (   s, s0, s1, s2, CLR);
 #endif
     }
 
