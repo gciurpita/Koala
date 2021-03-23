@@ -21,6 +21,9 @@ enum {
     BRK_I_LAST
 };
 
+extern const char * airBrkStr [];
+extern const char * indBrkStr [];
+
 extern const char * brakeStr [];
 
 extern float brkLnPsi;

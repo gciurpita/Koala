@@ -9,7 +9,7 @@
 #include "vars.h"
 
 // ---------------------------------------------------------
-const char * _airBrkStr [] = {
+const char * airBrkStr [] = {
     "REL",
     "RUN",
     "LAP",
@@ -20,7 +20,7 @@ const char * _airBrkStr [] = {
 };
 
 // terms from 1946 Victoria Railways Air Brakes pg 72
-const char * _indBrkStr [] = {
+const char * indBrkStr [] = {
     "RE-Q",
     "RE-S",
     "LAP",
@@ -170,7 +170,6 @@ void _airBrakes (
     brkLnVol   = cars * carLen * BrkLnArea / SqFt;
     brkRsvrVol = cars * BrkRsvrVol;
 
-
     // update brake line and reservoir fill
     if (0 > brkFlRat && brkLnPsiMin < brkLnPsi)  {  // dropping
         brkLnFil  = brkLnVol * brkLnPsi / AtmPsi;
@@ -311,14 +310,14 @@ brakesPr (
         return;
     }
 
-    printf (" %4s",   _airBrkStr [brakeAir]);
+    printf (" %4s",   airBrkStr [brakeAir]);
     printf (" %4.1f", brkLnVol);
     printf (" %6.2f", brkFlRat);
     printf (" %6.1f", brkLnFil);
     printf (" %6.1f", brkLnPsi);
     printf (" %3.0f %%", brakeAirPct);
 
-    printf (" %5s",   _indBrkStr [brakeInd]);
+    printf (" %5s",   indBrkStr [brakeInd]);
     printf (" %3.0f %%", brakeIndPct);
 }
 
