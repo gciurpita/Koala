@@ -7,7 +7,6 @@
 
 #define MAX_CHAR  33
 
-#define MAX_BRK   5
 #define MAX_THR   100
 #define MAX_REV   100
 #define MAX_MID   (MAX_REV / 2)

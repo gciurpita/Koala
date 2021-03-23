@@ -1,7 +1,7 @@
 
 #include "vars.h"
 
-const char *version   = "210320b";
+const char *version   = "210323a";
 
 int      dccAdr;
 
@@ -95,7 +95,7 @@ int      port            = 12080;
 
 
 Loco_s locos [N_LOCO] = {
-    { 100, 1.1, 0 },
+    { 100, 1.1, 4 },
     { 200, 2.1, 1 },
     { 300, 3.1, 2 },
     { 400, 4.1, 3 },
