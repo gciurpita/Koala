@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 
+#include "brakes.h"
 #include "cfg.h"
 #include "file.h"
 #include "koala.h"
@@ -37,14 +38,15 @@ _cmdModeHelp (
 {
     Serial.println ("\ncmdMode:");
     Serial.println ("   # B - set button #");
+    Serial.println ("   # b - set air-brake position");
     Serial.println ("   # c - set cars to #");
-    Serial.println ("   # b - set train brake to #");
     Serial.println ("     D - set debug to #");
+    Serial.println ("     d - display config variables");
     Serial.println ("     E - display configuration variables");
     Serial.println ("     e - switch to cfgMode");
     Serial.println ("     F - list SPIFFS files");
     Serial.println ("     f - toggle decoder function #");
-    Serial.println ("   # I - set independent brake to #");
+    Serial.println ("   # i - set independent brake to #");
     Serial.println ("     L - load configuration");
     Serial.println ("   # l - set loco address to #");
     Serial.println ("     p - switch to pin mode");
@@ -102,24 +104,20 @@ _cmdMode (
             val = c - '0' + (10 * val);
             continue;     // only time val needs to be preserved
 
-        case 'b':   // independent brake
-            brakeInd = MAX_BRK < val ? MAX_BRK : val;
+        case 'B':
+            // reserved for buttons
+            break;
+
+        case 'b':   // air brake
+            brakeAir = BRK_A_LAST > val ? val : BRK_A_EMER;
             break;
 
         case 'c':
             cars = val;
             break;
 
-        case 'B':
-            // reserved for buttons
-            break;
-
         case 'D':
             debug = val;
-            break;
-
-        case 'F':
-            fileDir ();
             break;
 
         case 'd':
@@ -130,14 +128,18 @@ _cmdMode (
             cfgEdit (Serial);
             break;
 
+        case 'F':
+            fileDir ();
+            break;
+
         case 'f':
             func     = val;
             msecFunc = msec;
             jmriFuncKey ((unsigned int) func, FUNC_TGL);
             break;
 
-        case 'I':   // independent brake
-            brakeInd = MAX_BRK < val ? MAX_BRK : val;
+        case 'i':   // independent brake
+            brakeInd = BRK_I_LAST > val ? val : BRK_I_APP_QUICK;
             break;
 
         case 'L':
