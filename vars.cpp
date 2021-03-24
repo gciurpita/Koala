@@ -1,62 +1,71 @@
-// definitions for all global variables
-
-#include "Arduino.h"
 
 #include "vars.h"
 
-const char *version   = "201122a";
+const char *version   = "210324a";
 
-// -----------------------------------------------------------------------------
-//  dynamic variables
+int      dccAdr;
 
-int      brake;
-int      brakeInd;
-int      brakePct = 123;
+int      brakeAir;
+float    brakeAirPct;
 int      brakeCfm;
+
+int      brakeInd;
+float    brakeIndPct;
 int      button;
 
-int      cars   = 1;    // guarantees automatic braking
-int      carLen = 40;
+int      cars;
+int      carLen  = 40;
+
+int      cutoff;
+
+int      dccSpd     = 0;
+int      dccSpdLst  = 0;
 
 int      dir;
-int      dirLst;
 
-int      grX10    = 0;
+int      encApos;
+int      encBpos;
 
-int      engine   = 1;
-int      loco     = 0;
+int      grX10;
 
-int      mph;
+int      engine;
 
 unsigned long    msec;
-int      timeSec;
-
 int      mass;
+
+float    mph;
+float    mphToDcc;
+
 int      reverser;
+
 int      slope;
 int      state;
 
 int      throttle;
-int      tonnage  = 0;
+int      timeSec;
+int      tonnage;
 
 int      tractEff;
-int      tractEffMax = 20000;
+int      tractEffMax;
 
 int      whistle;
-int      wtCar  = 80000;
-int      wtLoco = 68000;    // NA 34T
+int      wtCar;
+
+// -----------------------------------------------------------------------------
+// list of vars to display
 
 Vars_s vars [] = {
-    { & brake,    "brake" },
-    { & brakeInd, "brakeInd" },
-    { & brakePct, "brakePct" },
-    { & brakeCfm, "brakeCfm" },
+    { & brakeAir,    "brakeAir" },
+ // { & brakeAirPct, "brakeAirPct" },
+    { & brakeInd,    "brakeInd" },
+ // { & brakeIndPct, "brakeIndPct" },
+    { & brakeCfm,    "brakeCfm" },
+
     { & cars,     "cars" },
     { & carLen,   "carLen" },
+    { & dccSpd,   "dccSpd" },
     { & dir,      "dir" },
-    { & dirLst,   "dirLst" },
-    { & loco,     "loco" },
-    { & mph,      "mph" },
+ // { & mph,      "mph" },
     { & mass,     "mass" },
     { & reverser, "reverser" },
     { & state,    "state" },
@@ -66,7 +75,6 @@ Vars_s vars [] = {
     { & timeSec,  "timeSec" },
     { & tonnage,  "tonnage" },
     { & wtCar,    "wtCar" },
-    { & wtLoco,   "wtLoco" },
     { 0,        NULL },
 };
 
@@ -74,51 +82,27 @@ Vars_s *pVars = & vars [0];
 
 // -----------------------------------------------------------------------------
 //  stored variables
-int      adr [MAX_ADR]  = { 123, 456, 789, 400, 500, 600, 700, 800, 900 };
+
+char     name [MAX_CHAR] = "Koala Throttle";
+int      locoIdx         = 0;
 
 // WiFi and JMRI Server Definitions
-#if 1
 char     ssid [MAX_CHAR] = "WiFi-ssid";
 char     pass [MAX_CHAR] = "WiFi-password";
 
 char     host [MAX_CHAR] = "192.168.1.100";
 int      port            = 12080;
 
-#else
-char     ssid [MAX_CHAR] = "FiOS-DGHZ0";
-char     pass [MAX_CHAR] = "panorama123";
 
-char     host [MAX_CHAR] = "192.168.1.174";
-int      port            = 12080;
-#endif
-
-char     name [MAX_CHAR] = "Koala 4 Throttle";
-
-// -----------------------------------------------------------------------------
-//  stored variables
-
-EeVar_t eeVars [] = {
-    { (void*)   ssid,     sizeof(ssid), V_STR, "ssid"},
-    { (void*)   pass,     sizeof(pass), V_STR, "password" },
-    { (void*)   host,     sizeof(host), V_STR, "hostname" },
-    { (void*) & port,     sizeof(port), V_INT, "port" },
-
-    { (void*)   name,     sizeof(name), V_STR, "name" },
-
-    { (void*) & adr [0],  sizeof(int),  V_INT, "addr_0" },
-    { (void*) & adr [1],  sizeof(int),  V_INT, "addr_1" },
-    { (void*) & adr [2],  sizeof(int),  V_INT, "addr_2" },
-
-    { (void*) & adr [3],  sizeof(int),  V_INT, "addr_3" },
-    { (void*) & adr [4],  sizeof(int),  V_INT, "addr_4" },
-    { (void*) & adr [5],  sizeof(int),  V_INT, "addr_5" },
-    { (void*) & adr [6],  sizeof(int),  V_INT, "addr_6" },
-
-    { (void*) & adr [7],  sizeof(int),  V_INT, "addr_7" },
-    { (void*) & adr [8],  sizeof(int),  V_INT, "addr_8" },
-    { (void*) & adr [9],  sizeof(int),  V_INT, "addr_9" },
-
-    { NULL,               0,            V_NUL, NULL     },
+Loco_s locos [N_LOCO] = {
+    { 100, 1.1, 4 },
+    { 200, 2.1, 1 },
+    { 300, 3.1, 2 },
+    { 400, 4.1, 3 },
+    { 500, 3.2, 4 },
+    { 600, 2.2, 5 },
+    { 700, 1.2, 6 },
+    { 800, 2.3, 7 },
+    { 900, 3.3, 8 },
 };
 
-EeVar_t *pEeVars = & eeVars [0];

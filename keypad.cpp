@@ -1,8 +1,7 @@
 // keypad
 
 #include "keypad.h"
-
-extern int debug;
+#include "koala.h"  // debug
 
 #undef DEBUG
 
@@ -28,7 +27,7 @@ keypadSetup (
     for (unsigned int c = 0; c < _kpColSize; c++)
     {
         pinMode (_kpCols [c], INPUT_PULLUP);
-        if (1 < debug)
+        if (DBG_KEYPAD & debug)
             printf (" %s: col pin %2d\n", __func__, _kpCols [c]);
     }
 
@@ -36,7 +35,7 @@ keypadSetup (
     {
         digitalWrite (_kpRows [r], LOW);
         pinMode (_kpRows [r], INPUT);
-        if (1 < debug)
+        if (DBG_KEYPAD & debug)
             printf (" %s: row pin %2d\n", __func__, _kpRows [r]);
     }
 }
@@ -55,7 +54,7 @@ keyscan (
     {
         pinMode (_kpRows [r], OUTPUT);
 
-        if (2 <= debug)
+        if (DBG_KEYPAD & debug)
             delay (500);
 
         for (unsigned int c = 0; c < _kpColSize; c++)
@@ -68,7 +67,7 @@ keyscan (
                 *col = c;
                 int  res = (r << 4) | c;
 
-                if (1 < debug)  {
+                if (DBG_KEYPAD & debug)  {
                     Serial.print ("keyscan: row ");
                     Serial.print (r);
                     Serial.print (", col");

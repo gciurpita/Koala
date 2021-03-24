@@ -3,6 +3,7 @@
 
 # include "SPIFFS.h"
 
+void fileDelete (void);
 void fileDir (void);
 void varsLoad (void);
 void varsSave (void);

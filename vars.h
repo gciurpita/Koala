@@ -1,13 +1,12 @@
 #ifndef VARS_H
 # define VARS_H
 
-#include <stdio.h>
+#include <Arduino.h>    // needed for byte
 
-typedef unsigned char byte;
+#include "eng.h"
 
 #define MAX_CHAR  33
 
-#define MAX_BRK   5
 #define MAX_THR   100
 #define MAX_REV   100
 #define MAX_MID   (MAX_REV / 2)
@@ -18,7 +17,6 @@ enum {
     DIR_REV     = -1
 };
 
-enum { V_NUL, V_STR, V_INT };
 
 struct Vars_s {
     int        *p;
@@ -27,40 +25,55 @@ struct Vars_s {
 
 extern Vars_s  *pVars;
 
-typedef struct {
-    void       *p;
-    byte        nByte;
-    byte        type;
-    const char *desc;
-} EeVar_t;
+// -------------------------------------
+#define N_LOCO      20
 
-extern EeVar_t *pEeVars;
+struct Loco_s {
+    int     adr;
+    float   mphToDcc;
+    int     engIdx;
+};
+
+extern Loco_s locos [N_LOCO];
 
 // -------------------------------------
 // dynamic variables
 
-extern int      brake;
+extern int      dccAdr;
+
 extern int      brakeInd;
-extern int      brakePct;
+extern float    brakeIndPct;
 extern int      brakeCfm;
+
+extern int      brakeAir;
+extern float    brakeAirPct;
 extern int      button;
 
 extern int      cars;
 extern int      carLen;
+extern int      cutoff;
+
+extern int      dccSpd;
+extern int      dccSpdLst;
 
 extern int      dir;
-extern int      dirLst;
+
+extern int      encApos;
+extern int      encBpos;
 
 extern int      grX10;
 
 extern int      engine;
-extern int      loco;
+extern int      locoIdx;
 
 extern unsigned long    msec;
-extern int      mph;
-
 extern int      mass;
+
+extern float    mph;
+extern float    mphToDcc;
+
 extern int      reverser;
+
 extern int      slope;
 extern int      state;
 
@@ -73,20 +86,17 @@ extern int      tractEffMax;
 
 extern int      whistle;
 extern int      wtCar;
-extern int      wtLoco;
 
 // -------------------------------------
 // stored variables
-#define MAX_ADR  10
-extern int      adr [MAX_ADR];
+
+extern char     name [];
+extern const char *version;
 
 extern char     host [];
 extern int      port;
 
 extern char     ssid [];
 extern char     pass [];
-extern char     name [];
-
-extern const char *version;
 
 #endif

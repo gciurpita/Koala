@@ -1,9 +1,15 @@
 // menu engine
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#ifdef Sim
+# include <stdio.h>
+# include <stdlib.h>
+# include <string.h>
 
+#else
+# include <Arduino.h>
+#endif
+
+#include "cfg.h"
 #include "file.h"
 #include "koala.h"
 #include "menu.h"
@@ -38,7 +44,7 @@ disp (
 void
 __ (void *)
 {
-    if (debug)  printf ("%s:\n", __func__);
+    if (DBG_MENU & debug)  printf ("%s:\n", __func__);
 }
 
 // -------------------------------------
@@ -47,7 +53,7 @@ void
 sel (
     void *v)
 {
-    if (debug)  printf ("%s:\n", __func__);
+    if (DBG_MENU & debug)  printf ("%s:\n", __func__);
 
     P_t  *p  = (P_t*) v;
     int  *pV = (int *) p->p;
@@ -63,7 +69,7 @@ sfA (
     P_t     *p = (P_t*) v;
     char    *s = (char *) p->param;
 
-    if (debug)
+    if (DBG_MENU & debug)
         printf ("%s: '%c', digit %d\n", __func__, s [digit], digit);
 
     if (0 == s [digit] || (MAX_CHAR-2) == digit)
@@ -77,7 +83,7 @@ sfA (
 void
 sft (void *)
 {
-    if (debug)  printf ("%s:\n", __func__);
+    if (DBG_MENU & debug)  printf ("%s:\n", __func__);
 
     digit = MAX_DIGIT-1 > digit ? digit+1 : 0; 
 }
@@ -88,7 +94,7 @@ void
 deA (
     void  *v )
 {
-    if (debug)  printf ("%s:\n", __func__);
+    if (DBG_MENU & debug)  printf ("%s:\n", __func__);
 
     P_t  *p  = (P_t*) v;
     char *s  = (char*)p->param;
@@ -113,7 +119,7 @@ void
 dec (
     void  *v )
 {
-    if (debug)  printf ("%s:\n", __func__);
+    if (DBG_MENU & debug)  printf ("%s:\n", __func__);
 
     P_t  *p  = (P_t*) v;
 
@@ -135,7 +141,7 @@ void
 inA (
     void  *v )
 {
-    if (debug)  printf ("%s:\n", __func__);
+    if (DBG_MENU & debug)  printf ("%s:\n", __func__);
 
     P_t  *p  = (P_t*) v;
     char *s  = (char*)p->param;
@@ -162,7 +168,7 @@ void
 inc (
     void  *v )
 {
-    if (debug)  printf ("%s:\n", __func__);
+    if (DBG_MENU & debug)  printf ("%s:\n", __func__);
 
     P_t  *p  = (P_t*) v;
 
@@ -180,7 +186,7 @@ void
 up (
     void  *v )
 {
-    if (debug)  printf ("%s:\n", __func__);
+    if (DBG_MENU & debug)  printf ("%s:\n", __func__);
 
     P_t  *p  = (P_t*) v;
     *p->param = p->max > *p->param ? *p->param+1 : p->min;
@@ -192,7 +198,7 @@ void
 dn (
     void  *v )
 {
-    if (debug)  printf ("%s:\n", __func__);
+    if (DBG_MENU & debug)  printf ("%s:\n", __func__);
 
     P_t  *p  = (P_t*) v;
     *p->param = p->min < *p->param ? *p->param-1 : p->max;
@@ -203,7 +209,7 @@ void
 dspA (
     void    *v )
 {
-    if (debug)  printf ("%s:\n", __func__);
+    if (DBG_MENU & debug)  printf ("%s:\n", __func__);
 
     P_t    *p = (P_t*) v;
     char   *str = (char*) p->param;
@@ -242,7 +248,7 @@ void
 dspV (
     void    *v )
 {
-    if (debug)  printf ("%s:\n", __func__);
+    if (DBG_MENU & debug)  printf ("%s:\n", __func__);
 
     P_t     *p = (P_t*) v;
 
@@ -257,7 +263,7 @@ void
 dspP (
     void    *v )
 {
-    if (debug)  printf ("%s:\n", __func__);
+    if (DBG_MENU & debug)  printf ("%s:\n", __func__);
 
     P_t     *p = (P_t*) v;
     char   **s = (char **) p->p;
@@ -280,7 +286,7 @@ menu (
     MenuStim_t stim )
 {
 #if 0
-    if (debug)
+    if (DBG_MENU & debug)
         printf (Clear);
 #endif
 
@@ -300,14 +306,12 @@ menu (
             digit = 0;
         }
         else if (0 < lvl)  {
-            if (debug)  printf ("%s: M_MENU dec lvl\n", __func__);
+            if (DBG_MENU & debug)  printf ("%s: M_MENU dec lvl\n", __func__);
             m   = list [--lvl];
             q   = & m [idx [lvl]];
         }
 
-#if 1
-        varsSave ();
-#endif
+        cfgSave (cfgFname);
         break;
 
     case M_SEL:
@@ -317,12 +321,12 @@ menu (
         else if (T_PARAM == q->type
               || T_STR == q->type
               || T_LIST == q->type)  {
-            if (debug)  printf ("%s: M_SEL assign p\n", __func__);
+            if (DBG_MENU & debug)  printf ("%s: M_SEL assign p\n", __func__);
             t = (P_t*) q->ptr;
         }
 
         else if (T_MENU == q->type)  {
-            if (debug)  printf ("%s: M_SEL inc lvl\n", __func__);
+            if (DBG_MENU & debug)  printf ("%s: M_SEL inc lvl\n", __func__);
             list [++lvl] = (Menu_t *) q->ptr;
             idx  [lvl]   = 0;
             m            = list [lvl];
@@ -334,7 +338,7 @@ menu (
         if (t)
             t->func.up ((void*) t);
         else  {
-            if (debug)  printf ("%s: M_SEL inc idx\n", __func__);
+            if (DBG_MENU & debug)  printf ("%s: M_SEL inc idx\n", __func__);
             idx [lvl] ++;
             q++;
             if (T_NULL == q->type)  {
@@ -348,7 +352,7 @@ menu (
         if (t)
             t->func.dn ((void*) t);
         else if (0 < idx [lvl])  {
-            if (debug)  printf ("%s: M_SEL dec idx\n", __func__);
+            if (DBG_MENU & debug)  printf ("%s: M_SEL dec idx\n", __func__);
             idx [lvl] --;
             q--;
             // don't know max idx
@@ -363,7 +367,7 @@ menu (
         t->func.disp (q->ptr);
 
     else if (T_PARAM == q->type) {
-        if (debug)  printf ("%s: display T_PARAM\n", __func__);
+        if (DBG_MENU & debug)  printf ("%s: display T_PARAM\n", __func__);
 
         P_t *p = (P_t*) q->ptr;
         char   **s = (char **) p->p;
@@ -376,14 +380,14 @@ menu (
     }
 
     else if (T_STR == q->type)  {
-        if (debug)  printf ("%s: display T_STR\n", __func__);
+        if (DBG_MENU & debug)  printf ("%s: display T_STR\n", __func__);
 
         P_t *p = (P_t*) q->ptr;
         disp (p->text, (char*) p->param);
     }
 
     else if (T_LIST == q->type)  {
-        if (debug)  printf ("%s: display T_LIST\n", __func__);
+        if (DBG_MENU & debug)  printf ("%s: display T_LIST\n", __func__);
 
         P_t *p = (P_t*) q->ptr;
         sprintf (s1, "%5d", *p->param);
@@ -391,7 +395,7 @@ menu (
     }
 
     else  {
-        if (debug)  printf ("%s: display default\n", __func__);
+        if (DBG_MENU & debug)  printf ("%s: display default\n", __func__);
 
         if (q->pParam)  {
             sprintf (s1, "%5d", *q->pParam);

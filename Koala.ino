@@ -10,6 +10,8 @@
 
 #include "brakes.h"
 #include "buttons.h"
+#include "cfg.h"
+#include "engine.h"
 #include "encoder.h"
 #include "file.h"
 #include "koala.h"
@@ -18,10 +20,9 @@
 #include "pins.h"
 #include "pots.h"
 #include "physics.h"
-#include "server.h"
 #include "vars.h"
 
-unsigned int debug = 1;
+unsigned int debug = DBG_ENGINE;
 
 // -----------------------------------------------------------------------------
 // Initialize the OLED display using Wire library
@@ -54,10 +55,11 @@ const char * stateStr [] = {
 };
 #define N_STATE_STR  (sizeof(stateStr)/sizeof(char *))
 
-char s0[30];
-char s1[30];
-char s2[30];
-char s [80];
+char s0 [MAX_CHAR];
+char s1 [MAX_CHAR];
+char s2 [MAX_CHAR];
+char s3 [MAX_CHAR];
+char s [S_SIZE];
 
 // ---------------------------------------------------------
 // check if loco # has changes
@@ -65,28 +67,30 @@ char s [80];
 //     send dispatch/release to jmri
 void chkLoco (void)
 {
-    static int  locoLst = 0;
+    static int  locoLst = -1;
 
-    if (locoLst == loco)
+    if (locoLst == locoIdx)
         return;
 
-    sprintf (s, "%s: loco %d, locoLst %d,", __func__, loco, locoLst);
+    dccAdr   = locos [locoIdx].adr;
+    mphToDcc = locos [locoIdx].mphToDcc;
+    pEng     = & engs [locos [locoIdx].engIdx];
+
+    engineInit ();
+
+    sprintf (s, "%s: locoLst %d to locoIdx %d,", __func__, locoLst, locoIdx);
     Serial.println (s);
 
-    if (0 != locoLst)  {
-        state |= ST_NO_LOCO;
-        wifiSend ("MT-*<;>r");    // release all
-        wifiSend ("TS0");
-    }
+    // release all
+    wifiSend ("MT-*<;>r");
+    wifiSend ("TS0");
 
-    if (0 != loco)  {
-        state &= ~ST_NO_LOCO;
+    sprintf (s, "T%c%d", 128 < dccAdr ? 'L' : 'S', dccAdr);
+    wifiSend (s);
 
-        sprintf (s, "T%c%d", 128 < loco ? 'L' : 'S', loco);
-        wifiSend (s);
-    }
+    // reset throttle !!!!!!!!!!!!!!!!!!!!!
 
-    locoLst = loco;
+    locoLst = locoIdx;
 }
 
 // ---------------------------------------------------------
@@ -142,6 +146,7 @@ void dispOled(
 
 // ---------------------------------------------------------
 // default display screen
+#if 0
 static void dispDefault (void)
 {
     char *t = NULL;
@@ -153,9 +158,13 @@ static void dispDefault (void)
     else if (ST_NO_LOCO & state)
         t = (char*) "No LOCO";
     else  {
-        sprintf (s, "%2d:%02d   %d", timeSec / 60, timeSec % 60, loco);
+        sprintf (s, "%2d:%02d   %d", timeSec / 60, timeSec % 60, locoIdx);
+#if 0
         sprintf (s0, "   %3d Thr  %s", throttle, brakeStr [brake]);
-        sprintf (s1, "   %3d Spd  %s", mph,
+#else
+        sprintf (s0, "   %3d Thr  brk?", throttle);
+#endif
+        sprintf (s1, "   %3d Spd  %s", int(mph),
                 DIR_NEUTRAL == dir ? "Neutral"
                     : DIR_FOR == dir ? "Forward" : "Reverse");
     }
@@ -177,6 +186,7 @@ static void dispDefault (void)
     dispOled (s, s0, s1, 0, CLR);
 #endif
 }
+#endif
 
 // ---------------------------------------------------------
 // display inputs
@@ -185,7 +195,7 @@ static void dispInputs (void)
     byte  encA = 10 * digitalRead (Enc_A_Dt) + digitalRead (Enc_A_Clk);
     byte  encB = 10 * digitalRead (Enc_B_Dt) + digitalRead (Enc_B_Clk);
 
-    sprintf (s,  "%02d:%02d %s", timeSec / 60, timeSec % 60, name);
+            sprintf (s,  "%02d:%02d %s", timeSec / 60, timeSec % 60, name);
 #if 0
     sprintf (s0, "bkA %03d, bkB %3d", encApos, encBpos);
 #else
@@ -211,12 +221,7 @@ dispMenu (void)
         return;
     timeSecLst = timeSec;
 
-    if (! loco)  {
-        sprintf (s, "%2d:%02d   No Loco", timeSec / 60, timeSec % 60);
-    }
-    else  {
-        sprintf (s, "%2d:%02d  Loco %d", timeSec / 60, timeSec % 60, loco);
-    }
+    sprintf (s, "%2d:%02d  Loco %d", timeSec / 60, timeSec % 60, dccAdr);
 
     dispOled (s, 0, 0, 0, CLR);
 }
@@ -317,7 +322,7 @@ static void wifiConnect (void)
         sprintf (s, "%u.%u.%u.%u", ip[0], ip[1], ip[2], ip[3]);
 
         dispOled("WiFi connected", 0, s, 0, CLR);
-        serverInit ();
+ //     serverInit ();
         delay (1000);
     }
     else  {
@@ -408,25 +413,51 @@ void loop()
     }
 
     // -------------------------------------
-    // display default screen
-    else if (! (ST_CFG & state))  {
-        if (ST_MENU & state)  {
+    else if (ST_MENU & state)  {
             menu (M_NULL);
-        }
-        else if (ST_DVT & state)
+    }
+    else if (ST_DVT & state)
             dispInputs ();
-        else
-            dispDefault ();
+
+    // -------------------------------------
+    // run engine
+    else  {
+        potsRead ();
+        buttonsChk ();
+
+        chkLoco ();
+
+#define DispInterval    0
+        physics (msec, DispInterval, PrThr);
+
+        // update JMRI
+        dccSpd = mph * mphToDcc;
+        if (dccSpdLst != dccSpd)  {
+            printf ("%s: dccSpd %d, mph %.1f, mphToDcc %.2f\n",
+                __func__, dccSpd, mph, mphToDcc);
+            dccSpdLst = dccSpd;
+
+            sprintf (s, "TV%d", dccSpd);
+            wifiSend (s);
+        }
+
+#if 0
+        dispDefault ();
+#else
+        sprintf (s, "%2d:%02d   %d", timeSec / 60, timeSec % 60, dccAdr);
+        sprintf (s0, " %3d Thr  %s%02d Rev",
+            throttle, DIR_REV == dir ? "-" : " ", cutoff);
+
+        sprintf (s1, "  %5s %5s", airBrkStr [brakeAir], indBrkStr [brakeInd]);
+        sprintf (s2, "  %3d MPH  %3d DCC-Spd", int(mph), dccSpd);
+
+        dispOled (   s, s0, s1, s2, CLR);
+#endif
     }
 
     // -------------------------------------
-    // scan interfaces
-    potsRead ();
-    buttonsChk ();
-
-    // -------------------------------------
     // scan external interfaces
-    server ();
+ // server ();
     wifiReceive ();
 
     // check serial I/Fs and update state appropriately
@@ -436,12 +467,6 @@ void loop()
         res = pcRead (serialBT);
 #endif
     state = res ? state | ST_CFG : state & ~ST_CFG;
-
-    // -------------------------------------
-    // update JMRI
-    chkLoco ();
-    if (! (ST_NO_LOCO & state))
-        physics (msec);
 }
 
 // -----------------------------------------------------------------------------
@@ -449,6 +474,7 @@ void
 setup (void)
 {
     Serial.begin (115200);
+
     Serial.print   (name);
     Serial.print   (" - ");
     Serial.println (version);
@@ -459,7 +485,8 @@ setup (void)
 
     SPIFFS.begin (true);
 #if 1
-    varsLoad ();
+    if (! cfgLoad (cfgFname))
+        cfgSave (cfgFname);
 #endif
 
     // init hardware
@@ -479,7 +506,7 @@ setup (void)
     // -------------------------------------
     dispOled(name, version, 0, 0, CLR);
 
-    state = ST_NO_LOCO;
+    state = 0;
 
     // if button pressed during startup, skip wifi/jmri connections
     buttonsChk ();

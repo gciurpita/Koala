@@ -1,28 +1,31 @@
- believ/// brakes implementation
+// air & independent brakes implementation
 
 #ifdef  Sim
 # include <stdio.h>
-# define PI          3.1412
-
-#else
-# include <Arduino.h>
 #endif
 
 #include "brakes.h"
 #include "encoder.h"
-#include "koala.h"
 #include "vars.h"
 
 // ---------------------------------------------------------
-const char * brakeStr [] = {
+const char * airBrkStr [] = {
     "REL",
     "RUN",
     "LAP",
     "SVC1",
     "SVC2",
     "SVC3",
-    "EMER",
-    "E-STOP"
+    "EMER"
+};
+
+// terms from 1946 Victoria Railways Air Brakes pg 72
+const char * indBrkStr [] = {
+    "RE-Q",
+    "RE-S",
+    "LAP",
+    "AP-S",
+    "AP-Q"
 };
 
 // ---------------------------------------------------------
@@ -35,11 +38,11 @@ int stepsPerDetent = 1;
 #endif
 
 int encAmin    = 0;
-int encAmax    = BRK_LAST * stepsPerDetent;
+int encAmax    = BRK_I_LAST * stepsPerDetent;
 int encAposLst = 0;
 
 int encBmin    = 0;
-int encBmax    = BRK_LAST * stepsPerDetent;
+int encBmax    = BRK_A_LAST * stepsPerDetent;
 int encBposLst = 0;
 
 static int _brakeUpdate (
@@ -50,25 +53,16 @@ static int _brakeUpdate (
 {
     if (encMin > encPos)  {
         encMin = encPos;
-        encMax = encPos + BRK_LAST * stepsPerDetent;
+        encMax = encPos + BRK_A_LAST * stepsPerDetent;
     }
     else if (encMax < encPos)  {
         encMax = encPos;
-        encMin = encPos - BRK_LAST * stepsPerDetent;
+        encMin = encPos - BRK_A_LAST * stepsPerDetent;
     }
 
     encPosLst = encPos;
 
     return (encPos - encMin) / stepsPerDetent;
-}
-
-// -----------------------------------------------
-static void _brakesUpdate ()
-{
-    if (encBposLst != encBpos)  {
-        brake = _brakeUpdate (encBpos, encBposLst, encBmin, encBmax);
-     // printf ("%s: %d %s\n", __func__, brake, brakeStr [brake]);
-    }
 }
 
 // ---------------------------------------------------------
@@ -79,7 +73,7 @@ typedef struct {
     float rateSvc2;
     float rateSvc3;
     float rateEmer;
-    
+
     int   dropSvc1;
     int   dropSvc2;
 
@@ -87,12 +81,13 @@ typedef struct {
 } Model_t;
 
 Model_t models [] = {
-    { 0.67, -0.85, -0.95, -1.05, -1.5, 10, 20, "self-lapping" },
-    { 0.60, -0.85, -0.95, -1.05, -1.5,  0,  0, "non-self-lapping" },
+    {  100,   -85,   -95,  -105, -150, 10, 20, "self-lapping" },
+    {  100,   -85,   -95,  -105, -150,  0,  0, "non-self-lapping" },
+    {   89,   -30,   -53,  -105, -300,  0,  0, "Mark Values" },
 };
 #define N_MODELS    (sizeof(models)/sizeof(Model_t))
 
-Model_t *pMdl = & models [0];
+Model_t *pMdl = & models [2];
 
 // ---------------------------------------------------------
 // train brakes
@@ -107,13 +102,13 @@ Model_t *pMdl = & models [0];
 
 #define BrkRsvrVol  1.5
 
-float brkLnPsi    = 0;
+float brkLnPsi;
 float brkLnPsi_0  = 0;
 float brkLnPsiLst = 0;
 float brkLnPsiMin = 0;
 
-float brkLnFil    = 0;
-float brkRsvrFil  = 0;
+float brkLnFil    = 6;          // gross estimate
+// float brkRsvrFil  = 0;      // ??? brkRsvrVol ?
 float brkTotFil   = 0;
 
 float brkFlRat    = 0;
@@ -123,49 +118,48 @@ float brkRsvrVol;
 
 float timeMsec    = 0;
 
-void _trainBrakes (
+void _airBrakes (
     int dMsec )
-{ 
-    timeMsec += dMsec;
+{
+    if (0)
+        printf ("%s: brkLnPsi %4.1f, brakeAir %d\n",
+            __func__, brkLnPsi, brakeAir);
 
-    _brakesUpdate ();
+    float perMin = dMsec / 60000.0;
+
+    brakeAir = _brakeUpdate (encBpos, encBposLst, encBmin, encBmax);
 
     brkFlRat    = 0;
     brkLnPsiLst = brkLnPsi;
 
-    switch (brake)  {
-    case BRK_ESTOP:
-        brakePct = brkLnFil = brkLnPsi = 0;
-        eStop ();
-        return;
-
-    case BRK_REL:
-        brkFlRat   = pMdl->rateRel;
+    switch (brakeAir)  {
+    case BRK_A_REL:
+    case BRK_A_RUN:
+        brkFlRat   = pMdl->rateRel * perMin;
         brkLnPsi_0 = brkLnPsi;
         break;
 
-    case BRK_SVC3:
+    case BRK_A_SVC3:
         brkLnPsiMin = 0;
-        brkFlRat    = pMdl->rateSvc3;
+        brkFlRat    = pMdl->rateSvc3 * perMin;
         break;
 
-    case BRK_SVC2:
+    case BRK_A_SVC2:
         brkLnPsiMin = pMdl->dropSvc1 ? brkLnPsi_0 - pMdl->dropSvc2 : 0;
-        brkFlRat    = pMdl->rateSvc2;
+        brkFlRat    = pMdl->rateSvc2 * perMin;
         break;
 
-    case BRK_SVC1:
+    case BRK_A_SVC1:
         brkLnPsiMin = pMdl->dropSvc1 ? brkLnPsi_0 - pMdl->dropSvc1 : 0;
-        brkFlRat    = pMdl->rateSvc1;
+        brkFlRat    = pMdl->rateSvc1 * perMin;
         break;
 
-    case BRK_EMER:
+    case BRK_A_EMER:
         brkLnPsiMin = 0;
-        brkFlRat    = pMdl->rateEmer;
+        brkFlRat    = pMdl->rateEmer * perMin;
         break;
 
-    case BRK_RUN:
-    case BRK_LAP:
+    case BRK_A_LAP:
     default:
         brkFlRat    = 0;
         break;
@@ -176,7 +170,6 @@ void _trainBrakes (
     brkLnVol   = cars * carLen * BrkLnArea / SqFt;
     brkRsvrVol = cars * BrkRsvrVol;
 
-
     // update brake line and reservoir fill
     if (0 > brkFlRat && brkLnPsiMin < brkLnPsi)  {  // dropping
         brkLnFil  = brkLnVol * brkLnPsi / AtmPsi;
@@ -184,15 +177,17 @@ void _trainBrakes (
 
         if (0 > brkLnFil)
             brkLnFil = 0;
+        if (0) printf (" %s: brkFlRat %4.1f\n", __func__, brkFlRat);
     }
     // need to fill air in both line and reservoir
     else if (0 < brkFlRat && brkLnPsi < BrkPsiMax)  {   // filling
-        brkTotFil  = (brkRsvrFil + brkLnVol) * brkLnPsi / AtmPsi;
+        brkTotFil  = (brkRsvrVol + brkLnVol) * brkLnPsi / AtmPsi;
         brkTotFil += brkFlRat * dMsec / 1000;
-        brkLnFil   = brkLnVol * brkTotFil / (brkRsvrFil + brkLnVol);
+        brkLnFil   = brkLnVol * brkTotFil / (brkRsvrVol + brkLnVol);
 
         if (0 > brkLnFil)
             brkLnFil = 0;
+        if (0) printf (" %s: brkFlRat %4.1f\n", __func__, brkFlRat);
     }
 
     // update brake line pressure
@@ -201,63 +196,129 @@ void _trainBrakes (
     else
         brkLnPsi  = AtmPsi * brkLnFil / brkLnVol;
 
-    // min/max limits 
+    if (0)
+        printf (" %s: brkLnPsi %4.1f, brkLnVol %.1f, brkLnFil %.1f\n",
+            __func__, brkLnPsi, brkLnVol, brkLnFil);
+
+    // min/max limits
     if (brkLnPsi < brkLnPsiMin)
         brkLnPsi = brkLnPsiMin;
-    if (BrkPsiMax < brkLnPsi)
+
+    if (BrkPsiMax < brkLnPsi)       // brkLnTotFil
         brkLnPsi = BrkPsiMax;
 
     // update braking %
     float dBrkLnPsi = brkLnPsi_0 - brkLnPsi;
     if (0 < dBrkLnPsi)  {
-        brakePct = BrkPctCoef * dBrkLnPsi;
-        brakePct = 100 < brakePct ? 100 : brakePct;
+        brakeAirPct = BrkPctCoef * dBrkLnPsi;
+        brakeAirPct = 100 < brakeAirPct ? 100 : brakeAirPct;
     }
 
     else if (brkLnPsi > brkLnPsiLst)
-        brakePct = 0;
+        brakeAirPct = 0;
 }
+
+// ---------------------------------------------------------
+//
+typedef struct {
+    float relQuick;     // % per second
+    float relSlow;
+    float lap;
+    float appSlow;
+    float appQuick;
+
+    const char* desc;
+} ModelInd_t;
+
+ModelInd_t modelInd [] = {
+    { -100.0/5, -100/15,  0.0, 100.0/15, 100.0/5, "ind model 1" },
+};
+#define N_MODEL_IND    (sizeof(modelInd)/sizeof(ModelInd_t))
+
+ModelInd_t *pMdlInd = & modelInd [0];
+
 
 // ---------------------------------------------------------
 // independent brake routine
 
+void _indBrakes (
+    int dMsec )
+{
+    float perSec = dMsec / 1000.0;
+
+    brakeInd = _brakeUpdate (encApos, encAposLst, encAmin, encAmax);
+
+    switch (brakeInd)  {
+    case BRK_I_REL_QUICK:
+        brakeIndPct += pMdlInd->relQuick * perSec;
+        break;
+
+    case BRK_I_REL_SLOW:
+        brakeIndPct += pMdlInd->relSlow * perSec;
+        break;
+
+    case BRK_I_APP_SLOW:
+        brakeIndPct += pMdlInd->appSlow * perSec;
+        break;
+
+    case BRK_I_APP_QUICK:
+        brakeIndPct += pMdlInd->appQuick * perSec;
+        break;
+
+    default:
+        break;
+    }
+
+#define BRK_IND_MAX     100
+#define BRK_IND_MIN       0
+
+    // limit
+    if (BRK_IND_MAX < brakeIndPct)
+        brakeIndPct = BRK_IND_MAX;
+
+    if (BRK_IND_MIN > brakeIndPct)
+        brakeIndPct = BRK_IND_MIN;
+}
 
 // ---------------------------------------------------------
 void
-#ifdef Sim
+brakesMdlPr (void)
+{
+    printf ("%s:", __func__);
+    printf (" %.1f Rel",  pMdl->rateRel);
+    printf (" %.1f Svc1", pMdl->rateSvc1);
+    printf (" %.1f Svc2", pMdl->rateSvc2);
+    printf (" %.1f Svc3", pMdl->rateSvc3);
+    printf (" %.1f Emer", pMdl->rateEmer);
+    printf ("\n");
+}
+
+// ---------------------------------------------------------
+void
 brakesPr (
     int  hdr)
 {
-    if (hdr)  {
-        printf ("\n");
+    if (hdr)
+    {
         printf (" %4s", "Pos");
-        printf (" %4s", "Vol");
-        printf (" %6s", "Rate");
-        printf (" %6s", "Fil");
-        printf (" %6s", "PSI");
-        printf (" %5s", "Pct");
-
-        printf (" %4s", "Car");
-        printf (" %6s", "Time");
-        printf ("\n");
+        printf (" %4s", "vol");
+        printf (" %6s", "flRat");
+        printf (" %6s", "fil");
+        printf (" %6s", "psi");
+        printf (" %5s", "pct");
+        printf (" %9s", "Independent");
+        return;
     }
-#else
-brakesPr (void)
-{
-#endif
 
-    printf (" %4s",   brakeStr [brake]);
+    printf (" %4s",   airBrkStr [brakeAir]);
     printf (" %4.1f", brkLnVol);
     printf (" %6.2f", brkFlRat);
     printf (" %6.1f", brkLnFil);
     printf (" %6.1f", brkLnPsi);
-    printf (" %3d %%", brakePct);
+    printf (" %3.0f %%", brakeAirPct);
 
-#ifdef Sim
- // printf (" %6.1f", brkLnPsi_0);
-    printf (" %4d",   cars);
-    printf (" %6.1f", timeMsec / 1000);
-#endif
+    printf (" %5s",   indBrkStr [brakeInd]);
+    printf (" %3.0f %%", brakeIndPct);
 }
 
 // ---------------------------------------------------------
@@ -265,5 +326,8 @@ void
 brakes (
     int dMsec )
 {
-    _trainBrakes (dMsec);
+    timeMsec += dMsec;
+
+    _airBrakes (dMsec);
+    _indBrakes (dMsec);
 }

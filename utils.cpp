@@ -58,3 +58,21 @@ fontStringWid (
 
     return wid;
 }
+
+// ------------------------------------------------
+
+int
+readLine (
+    char  *s,
+    int    size )
+{
+    int  idx = 0;
+    do  {
+        while (! Serial.available ())
+            ;
+        s [idx] = Serial.read ();
+    } while ('\n' != s [idx++] && idx < size);
+    s [idx-1] = 0;
+
+    return idx;
+}
