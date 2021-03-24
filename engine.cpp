@@ -281,6 +281,7 @@ cylinderPressure (
     // update amount of steam in steam chest 
     st.fill    += st.flow;                      // flow from throttle
     st.fill    -= st.consume;
+    st.fill     = 0 > st.fill ? 0 : st.fill;
 
     if (DBG_CYLPRESS & debug)
         printf (" fill %.1f, consume %.1f", st.fill, st.consume);
