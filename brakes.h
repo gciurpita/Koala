@@ -9,7 +9,7 @@ enum {
     BRK_A_SVC2,
     BRK_A_SVC3,
     BRK_A_EMER,
-    BRK_A_LAST
+    BRK_A_LAST = BRK_A_EMER
 };
 
 enum {
@@ -18,7 +18,7 @@ enum {
     BRK_I_LAP,
     BRK_I_APP_SLOW,
     BRK_I_APP_QUICK,
-    BRK_I_LAST
+    BRK_I_LAST = BRK_I_APP_QUICK
 };
 
 extern const char * airBrkStr [];
