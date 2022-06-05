@@ -14,6 +14,7 @@
 #include "engine.h"
 #include "encoder.h"
 #include "file.h"
+#include "keypad.h"
 #include "koala.h"
 #include "menu.h"
 #include "pcRead.h"
@@ -22,7 +23,7 @@
 #include "physics.h"
 #include "vars.h"
 
-unsigned int debug = DBG_ENGINE;
+unsigned int debug = DBG_BRAKE;
 
 // -----------------------------------------------------------------------------
 // Initialize the OLED display using Wire library
@@ -401,8 +402,27 @@ void loop()
     }
 
     // -------------------------------------
+    if (ST_MENU & state)  {
+            menu (M_NULL);
+    }
+
+    // -------------------------------------
+    else if (ST_DVT & state)  {
+        potsRead ();
+
+        byte row = 0;
+        byte col = 0;
+        if (NO_KEY != keyscan (&row, &col))
+            button = 10*(1+row) + col;
+        else
+            button = 0;
+
+        dispInputs ();
+    }
+
+    // -------------------------------------
     // attempt wifi connection
-    if (! (ST_WIFI & state) && ! (ST_CFG & state))  {
+    else if (! (ST_WIFI & state) && ! (ST_CFG & state))  {
         wifiConnect ();
     }
 
@@ -411,13 +431,6 @@ void loop()
     else if (! (ST_JMRI & state) && ! (ST_CFG & state))  {
         jmriConnect ();
     }
-
-    // -------------------------------------
-    else if (ST_MENU & state)  {
-            menu (M_NULL);
-    }
-    else if (ST_DVT & state)
-            dispInputs ();
 
     // -------------------------------------
     // run engine
@@ -484,7 +497,7 @@ setup (void)
 #endif
 
     SPIFFS.begin (true);
-#if 1
+#if 0
     if (! cfgLoad (cfgFname))
         cfgSave (cfgFname);
 #endif
@@ -506,7 +519,11 @@ setup (void)
     // -------------------------------------
     dispOled(name, version, 0, 0, CLR);
 
+#if 0
     state = 0;
+#else
+        state |= ST_WIFI | ST_JMRI;
+#endif
 
     // if button pressed during startup, skip wifi/jmri connections
     buttonsChk ();
