@@ -19,9 +19,7 @@ potsRead (void)
     static int thrLst;
            int thr = 100 * analogRead (ADC_THR)     / ADC_MAX;
 
-    if (thrLst != thr)  {
-        thrLst   = thr;
-        throttle = 100 * thr / ADC_MAX;
-    }
+    if (thrLst != thr)
+        throttle = thrLst   = thr;
 }
 
