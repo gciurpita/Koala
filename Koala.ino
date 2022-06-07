@@ -264,7 +264,13 @@ static void jmriConnect (void)
     Serial.println (s);
 #endif
 
-    if (wifi.connect(host, port))  {
+    if (button)  {
+        state |= ST_JMRI;
+        dispOled("JMRI abort", 0, 0, 0, CLR);
+        delay (2000);
+    }
+
+    else if (wifi.connect(host, port))  {
         state |= ST_JMRI;
 
         dispOled("JMRI connected", 0, 0, 0, CLR);
@@ -273,9 +279,6 @@ static void jmriConnect (void)
 
         delay (1000);
     }
-
-    dispOled(0, host, s0, 0, CLR);
-    delay (1000);
 }
 
 // ---------------------------------------------------------
@@ -475,15 +478,18 @@ setup (void)
     Serial.print   (" - ");
     Serial.println (version);
 
+    // -------------------------------------
 #ifdef BT
     serialBT.begin (name);
 #endif
 
     SPIFFS.begin (true);
-#if 0
+#if 1
     if (! cfgLoad (cfgFname))
         cfgSave (cfgFname);
 #endif
+
+    WiFi.begin (ssid, pass);
 
     // init hardware
     pinMode (LED, OUTPUT);
@@ -491,6 +497,7 @@ setup (void)
     buttonsInit ();
     encoderInit ();     // configures interrupts
 
+    // -------------------------------------
     // init OLED display
     display.init();
  // display.flipScreenVertically();
@@ -500,22 +507,13 @@ setup (void)
     display.setColor(WHITE);
 
     dispOled(name, version, 0, 0, CLR);
+    delay (1000);                           // also for WiFi
 
     // -------------------------------------
-    WiFi.begin (ssid, pass);
-
-#if 0
-    state = 0;
-#elif 1
-        state |= ST_JMRI;
-#else
-        state |= ST_WIFI | ST_JMRI;
-#endif
-
     // if button pressed during startup, skip wifi/jmri connections
     buttonsChk ();
     if (button)
         state |= ST_WIFI | ST_JMRI;
-
-    delay (1000);
+    else
+        state  = 0;
 }
