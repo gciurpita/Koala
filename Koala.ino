@@ -323,19 +323,17 @@ static void wifiConnect (void)
         sprintf (s, "%u.%u.%u.%u", ip[0], ip[1], ip[2], ip[3]);
 
         dispOled("WiFi connected", 0, s, 0, CLR);
- //     serverInit ();
         delay (1000);
     }
     else  {
- //     delay (1000);
         dispOled("WiFi connecting", ssid, pass, 0, CLR);
 #if 0
         sprintf ((char*)"WiFi connecting, %s, %s", ssid, pass);
         Serial.println (s);
 #endif
 
-        delay (1000);
-        dispOled(0, ssid, pass, 0, CLR);
+        delay (2000);
+ //     dispOled(0, ssid, pass, 0, CLR);
     }
 }
 
@@ -402,14 +400,10 @@ void loop()
     }
 
     // -------------------------------------
-    if (ST_MENU & state)  {
-            menu (M_NULL);
-    }
+    potsRead ();
+    buttonsChk ();
 
-    // -------------------------------------
-    else if (ST_DVT & state)  {
-        potsRead ();
-
+    if (ST_DVT & state)  {
         byte row = 0;
         byte col = 0;
         if (NO_KEY != keyscan (&row, &col))
@@ -434,10 +428,7 @@ void loop()
 
     // -------------------------------------
     // run engine
-    else  {
-        potsRead ();
-        buttonsChk ();
-
+    if (! (ST_MENU & state))  {
         chkLoco ();
 
 #define DispInterval    0
@@ -470,7 +461,6 @@ void loop()
 
     // -------------------------------------
     // scan external interfaces
- // server ();
     wifiReceive ();
 
     // check serial I/Fs and update state appropriately
@@ -521,6 +511,8 @@ setup (void)
 
 #if 0
     state = 0;
+#elif 1
+        state |= ST_JMRI;
 #else
         state |= ST_WIFI | ST_JMRI;
 #endif
