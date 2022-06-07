@@ -316,25 +316,18 @@ int jmriFuncKey (
 // connect to wifi
 static void wifiConnect (void)
 {
-    if (WL_CONNECTED == WiFi.begin (ssid, pass))  {
+    if (WL_CONNECTED == WiFi.status ())  {
         state |= ST_WIFI;
 
         IPAddress ip = WiFi.localIP ();
         sprintf (s, "%u.%u.%u.%u", ip[0], ip[1], ip[2], ip[3]);
 
-        dispOled("WiFi connected", 0, s, 0, CLR);
-        delay (1000);
+        dispOled("WiFi connected", ssid, s, 0, CLR);
     }
-    else  {
+    else
         dispOled("WiFi connecting", ssid, pass, 0, CLR);
-#if 0
-        sprintf ((char*)"WiFi connecting, %s, %s", ssid, pass);
-        Serial.println (s);
-#endif
 
-        delay (2000);
- //     dispOled(0, ssid, pass, 0, CLR);
-    }
+    delay (1000);
 }
 
 // ---------------------------------------------------------
@@ -506,8 +499,10 @@ setup (void)
     display.setTextAlignment(TEXT_ALIGN_LEFT);
     display.setColor(WHITE);
 
-    // -------------------------------------
     dispOled(name, version, 0, 0, CLR);
+
+    // -------------------------------------
+    WiFi.begin (ssid, pass);
 
 #if 0
     state = 0;
