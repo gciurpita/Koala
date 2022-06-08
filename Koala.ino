@@ -424,7 +424,7 @@ void loop()
 
     // -------------------------------------
     // run engine
-    if (! (ST_MENU & state))  {
+    else if (! (ST_MENU & state))  {
         chkLoco ();
 
 #define DispInterval    0
@@ -484,11 +484,13 @@ setup (void)
 #endif
 
     SPIFFS.begin (true);
-#if 1
+#if 0
     if (! cfgLoad (cfgFname))
         cfgSave (cfgFname);
 #endif
 
+    WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE, INADDR_NONE);
+    WiFi.setHostname (name);
     WiFi.begin (ssid, pass);
 
     // init hardware
