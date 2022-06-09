@@ -354,12 +354,15 @@ static void wifiReceive (void)
 
 // ---------------------------------------------------------
 // common routine for sending strings to wifi and flushing
+int dbgWifi = 1;        // can be set in simulation
 void
 wifiSend (
     const char*  s )
 {
-    Serial.print ("wifiSend: ");
-    Serial.println (s);
+    if (dbgWifi)  {
+        Serial.print ("wifiSend: ");
+        Serial.println (s);
+    }
 
     wifi.println (s);
     wifi.flush ();
