@@ -8,6 +8,8 @@
 #include "encoder.h"
 #include "vars.h"
 
+int   dbgBr       = 0;
+
 // ---------------------------------------------------------
 const char * airBrkStr [] = {
     "REL",
@@ -124,6 +126,9 @@ float timeMsec    = 0;
 void _airBrakes (
     int dMsec )
 {
+    if (0 == cars)
+        return;
+
     if (0)
         printf ("%s: brkLnPsi %4.1f, brakeAir %d\n",
             __func__, brkLnPsi, brakeAir);
@@ -180,7 +185,7 @@ void _airBrakes (
 
         if (0 > brkLnFil)
             brkLnFil = 0;
-        if (0) printf (" %s: brkFlRat %4.1f\n", __func__, brkFlRat);
+        if (dbgBr) printf (" %s: + brkFlRat %4.1f", __func__, brkFlRat);
     }
     // need to fill air in both line and reservoir
     else if (0 < brkFlRat && brkLnPsi < BrkPsiMax)  {   // filling
@@ -190,7 +195,7 @@ void _airBrakes (
 
         if (0 > brkLnFil)
             brkLnFil = 0;
-        if (0) printf (" %s: brkFlRat %4.1f\n", __func__, brkFlRat);
+        if (dbgBr) printf (" %s: - brkFlRat %4.1f", __func__, brkFlRat);
     }
 
     // update brake line pressure
@@ -199,9 +204,13 @@ void _airBrakes (
     else
         brkLnPsi  = AtmPsi * brkLnFil / brkLnVol;
 
-    if (0)
-        printf (" %s: brkLnPsi %4.1f, brkLnVol %.1f, brkLnFil %.1f\n",
-            __func__, brkLnPsi, brkLnVol, brkLnFil);
+    if (dbgBr)  {
+        printf (", brkLnPsi %4.1f", brkLnPsi);
+        printf (", brkTotFil %.1f", brkTotFil);
+        printf (", brkLnFil %.1f",  brkLnFil);
+        printf (", brkLnVol %.1f",  brkLnVol);
+        printf ("\n");
+    }
 
     // min/max limits
     if (brkLnPsi < brkLnPsiMin)
