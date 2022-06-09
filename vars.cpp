@@ -1,7 +1,7 @@
 
 #include "vars.h"
 
-const char *version   = "220607d";
+const char *version   = "220607f";
 
 
 int      dccAdr;
@@ -88,15 +88,10 @@ char     name [MAX_CHAR] = "Koala Throttle";
 int      locoIdx         = 0;
 
 // WiFi and JMRI Server Definitions
-#if 0
 char     ssid [MAX_CHAR] = "WiFi-ssid";
 char     pass [MAX_CHAR] = "WiFi-password";
-#else
-char     ssid [MAX_CHAR] = "wally";
-char     pass [MAX_CHAR] = "Pan0rama";
-#endif
 
-char     host [MAX_CHAR] = "192.168.1.100";
+char     host [MAX_CHAR] = "192.168.0.41";
 int      port            = 12080;
 
 
