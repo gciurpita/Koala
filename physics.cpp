@@ -114,7 +114,7 @@ disp (void)
     printf (" %6d", tractEff);
     printf (10 > whRes      ? " %6.2f" : " %6.0f", whRes);
     printf (" %6.1f", grF);
-    printf (10 > brkF       ? " %6.2f" : " %6.0f", brkF);
+    printf (10 > ABS(brkF)  ? " %6.2f" : " %6.0f", brkF);
 
     printf (10 > ABS(force) ? " %5.2f" : " %5.0f", force);
     printf (" %6.2f", acc);
@@ -160,31 +160,37 @@ int           brkMode )
 
     // -------------------------------------
     // forces
-    //
+
     // tractive effort
- // force  = dir * tractEff;
-    force  = tractEff;
+    force      = tractEff;
+
+    // grade relative to forward direction of train
+    force     += grF = -wtTot * grX10 / 1000;
 
     // wheel resistance
     float rf   =  rollRes (fps/MphTfps);
     float tons =  wtTot / LbPton;
-    whRes      = 0.1 < fps ? rf * tons : 0;     // only when rolling
- // force     -= dir * whRes;
-    force     -= whRes;
-
-    // grade
-    grF    = wtTot * grX10 / 1000;      // slope
- // force -= dir * grF;
-    force -= grF;
+    whRes      = -SGN(mph) * rf * tons;
+    if (0 != mph)
+        force     += whRes;
 
     // brakes
-    brkF  = (cars * wtCar)       * NBR * brakeAirPct / 100;
-    brkF +=         pEng->wtLoco * NBR * brakeIndPct / 100;
+    brkF  = (cars * wtCar) * brakeAirPct / 100;
+    brkF +=  pEng->wtLoco  * brakeIndPct / 100;
+    brkF *= -SGN(mph) * LbPton * NBR;
 
-    if (0 == mph && ABS(force) < brkF)  // shouldn't force car to move
-        brkF =  SGN(force) * force;
+    // brake force shouldn't cause train to move
+    //     can't excede tractive + grade force
+    //     train resistance is zero when stopped
+    if (0 == mph && ABS(brkF) >= ABS(force))
+        force  = 0;
+    else
+        force += brkF;
 
-    force -= dir * brkF;
+#if 0
+    printf (" %s: %6.4f %6.4f %6.4f %6.0f %6.4f %d\n",
+        __func__, tractEff, whRes, grF, brkF, force, ABS(force) <= brkF);
+#endif
 
     // -------------------------------------
     // acceleration (Newton's equation)
@@ -192,6 +198,11 @@ int           brkMode )
     acc   = force / mass;
     fps  += acc * dMsec / 1000;
     mph   = fps / MphTfps;
+
+    static float mphLst;
+    if (0 != mphLst && SGN(mphLst) != SGN(mph))
+        fps = mph = 0;
+    mphLst = mph;
 
     // -------------------------------------
 #if 1

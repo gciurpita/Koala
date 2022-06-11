@@ -14,6 +14,12 @@ potsRead (void)
     slope    = 100 * analogRead (ADC_SLOPE)   / ADC_MAX;
     whistle  = 100 * analogRead (ADC_WHISTLE) / ADC_MAX;
     reverser = 100 * analogRead (ADC_REV)     / ADC_MAX;
-    throttle = 100 * analogRead (ADC_THR)     / ADC_MAX;
+
+    // capture analog changes allowing cmds to overwrite
+    static int thrLst;
+           int thr = 100 * analogRead (ADC_THR)     / ADC_MAX;
+
+    if (thrLst != thr)
+        throttle = thrLst   = thr;
 }
 

@@ -8,6 +8,8 @@
 #include "encoder.h"
 #include "vars.h"
 
+int   dbgBr       = 0;
+
 // ---------------------------------------------------------
 const char * airBrkStr [] = {
     "REL",
@@ -16,7 +18,8 @@ const char * airBrkStr [] = {
     "SVC1",
     "SVC2",
     "SVC3",
-    "EMER"
+    "EMER",
+    "ovrFlw",
 };
 
 // terms from 1946 Victoria Railways Air Brakes pg 72
@@ -25,44 +28,46 @@ const char * indBrkStr [] = {
     "RE-S",
     "LAP",
     "AP-S",
-    "AP-Q"
+    "AP-Q",
+    "ovrFlw",
 };
 
 // ---------------------------------------------------------
 // determine brake position
 
-#if 0
-int stepsPerDetent = 2;
+#if 1
+int stepsPdetent = 2;
 #else
-int stepsPerDetent = 1;
+int stepsPdetent = 1;
 #endif
 
-int encAmin    = 0;
-int encAmax    = BRK_I_LAST * stepsPerDetent;
-int encAposLst = 0;
+typedef struct {
+    int     nSteps;
+    int     max;
+    int     min;
+    int     pos;
+    int     posLst;
+} Enc;
 
-int encBmin    = 0;
-int encBmax    = BRK_A_LAST * stepsPerDetent;
-int encBposLst = 0;
+static Enc _encAir = { BRK_A_LAST * stepsPdetent, BRK_A_LAST * stepsPdetent };
+static Enc _encInd = { BRK_I_LAST * stepsPdetent, BRK_I_LAST * stepsPdetent };
 
 static int _brakeUpdate (
     int   encPos,
-    int & encPosLst,
-    int & encMin,
-    int & encMax )
+    Enc  *p )
 {
-    if (encMin > encPos)  {
-        encMin = encPos;
-        encMax = encPos + BRK_A_LAST * stepsPerDetent;
+    if (p->min > encPos)  {
+        p->min = encPos;
+        p->max = encPos + p->nSteps;
     }
-    else if (encMax < encPos)  {
-        encMax = encPos;
-        encMin = encPos - BRK_A_LAST * stepsPerDetent;
+    else if (p->max < encPos)  {
+        p->max = encPos;
+        p->min = encPos - p->nSteps;
     }
 
-    encPosLst = encPos;
+    p->posLst = encPos;
 
-    return (encPos - encMin) / stepsPerDetent;
+    return (encPos - p->min) / stepsPdetent;
 }
 
 // ---------------------------------------------------------
@@ -121,13 +126,16 @@ float timeMsec    = 0;
 void _airBrakes (
     int dMsec )
 {
+    if (0 == cars)
+        return;
+
     if (0)
         printf ("%s: brkLnPsi %4.1f, brakeAir %d\n",
             __func__, brkLnPsi, brakeAir);
 
     float perMin = dMsec / 60000.0;
 
-    brakeAir = _brakeUpdate (encBpos, encBposLst, encBmin, encBmax);
+    brakeAir = _brakeUpdate (encBpos, & _encAir);
 
     brkFlRat    = 0;
     brkLnPsiLst = brkLnPsi;
@@ -177,7 +185,7 @@ void _airBrakes (
 
         if (0 > brkLnFil)
             brkLnFil = 0;
-        if (0) printf (" %s: brkFlRat %4.1f\n", __func__, brkFlRat);
+        if (dbgBr) printf (" %s: + brkFlRat %4.1f", __func__, brkFlRat);
     }
     // need to fill air in both line and reservoir
     else if (0 < brkFlRat && brkLnPsi < BrkPsiMax)  {   // filling
@@ -187,7 +195,7 @@ void _airBrakes (
 
         if (0 > brkLnFil)
             brkLnFil = 0;
-        if (0) printf (" %s: brkFlRat %4.1f\n", __func__, brkFlRat);
+        if (dbgBr) printf (" %s: - brkFlRat %4.1f", __func__, brkFlRat);
     }
 
     // update brake line pressure
@@ -196,9 +204,13 @@ void _airBrakes (
     else
         brkLnPsi  = AtmPsi * brkLnFil / brkLnVol;
 
-    if (0)
-        printf (" %s: brkLnPsi %4.1f, brkLnVol %.1f, brkLnFil %.1f\n",
-            __func__, brkLnPsi, brkLnVol, brkLnFil);
+    if (dbgBr)  {
+        printf (", brkLnPsi %4.1f", brkLnPsi);
+        printf (", brkTotFil %.1f", brkTotFil);
+        printf (", brkLnFil %.1f",  brkLnFil);
+        printf (", brkLnVol %.1f",  brkLnVol);
+        printf ("\n");
+    }
 
     // min/max limits
     if (brkLnPsi < brkLnPsiMin)
@@ -246,7 +258,7 @@ void _indBrakes (
 {
     float perSec = dMsec / 1000.0;
 
-    brakeInd = _brakeUpdate (encApos, encAposLst, encAmin, encAmax);
+    brakeInd = _brakeUpdate (encApos, & _encInd);
 
     switch (brakeInd)  {
     case BRK_I_REL_QUICK:

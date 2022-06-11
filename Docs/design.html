@@ -1,0 +1,717 @@
+<title>Koala SW & HW Design</title>
+
+<table align=right>
+  <tr> <td> November 12, 2020
+  <tr> <td> Greg Ciurpita
+</table>
+
+<ul>
+ <li> <a href=#motion> Physics of Motion</a>
+ <li> <a href=#brake>  Brakes</a>
+ <li> <a href=#buttons>  Buttons</a>
+ <li> <a href=#steamEng> Steam Engine</a>
+ <li> <a href=#hardware> Hardware</a>
+</ul>
+
+<!-- ------------------------------------------------------  --------------- -->
+<hr>
+<a name=motion></a>
+<h4> Physics of Motion </h4>
+
+Newton's 2nd law describes the motion of objects,
+force equal mass times acceleration:
+<blockquote>
+F = M &middot; A
+<br>
+A = M / F
+</blockquote>
+
+the acceleration, the change in speed of the train,
+is the mass of the train divided by
+the total force acting on the train.
+
+<p>
+The forces acting on the train include
+<ul>
+ <li> tractive effort, the tangential force produced by the drivers against the rails
+ <li> train resistance
+ <li> brake force applied to the locomotive and each car of the train, and
+ <li> force of gravity due to grades
+</ul>
+
+<p>
+There are various caveats to the application of these forces.
+While the trains resistance and brake force can be non-zero at zero mph,
+they cannot result in a negative acceleration and
+cause the train to move backwards.
+Grades can result in both positive and negative force.
+Braking may be necessary on downhill grades to maintain speed.
+
+<p>
+**************
+<ul>
+ <li> if (0 == mph) train resistance = 0
+ <li> if (TE + grade == 0) brake = 0
+</ul>
+**************
+
+<p>
+The mass of the train is determined from the total weight of the train,
+tonnage of all cars and
+total weight of the locomotive and tender.
+Their sum, (lbs)
+is divided by the gravitational constant in imperial units, 32 ft/sec/sec,
+to determine the mass in <i>slugs</i>.
+
+<blockquote>
+ <table width=300>
+  <tr> <td> <i>mass <td> = <td> total_weight / 32.2
+ </table>
+</blockquote>
+
+<p>
+The acceleration is
+<blockquote> <i>
+acc = mass / (drawbar_force - train_resistance - brake_force - grade_force)
+</blockquote> </i>
+
+With the forces in <i>lbs</i> and the mass in <i>slugs</i>,
+the acceleration is in ft/sec/sec.
+From the value for acceleration and the time between iterations, <i>dT</i>,
+the algorithm determines speed in both ft/sec and mph and RPM:
+
+<blockquote>
+ <table width=400>
+  <tr> <td> <i>fps <td align=right> += <td> <i> acc * dT
+  <tr> <td> <i>mph <td align=right> =  <td> <i> fps * 3600 / 5280
+  <tr> <td> <i>RPM <td align=right> =  <td> <i> fps * 60 / (PI * driver_diameter / 12)
+ </table>
+</blockquote>
+</i>
+
+The RPM is used in determine steam consumption by the cylinders.
+Speed in mph used to determine train resistance and
+the value passed to the DCC command station
+used to control the speed of the model locomotive.
+
+<!-- ---------------------------------  ---------------- -->
+<a name=te></a>
+<h4> 1.1 Tractive Effort</h4>
+
+The tractive effort (TE) is the force applied against
+the rails turned by the cylinders.
+
+<table> <tr> <td>
+
+The force on the drivers
+depends on the angle of the drivers.
+The force is maximum
+when the siderod connection to the driver
+is perpendicular to the center of the driver and
+is zero when in line with the center of the driver.
+
+<p>
+Typically there are two cylinders.
+The driver connection points relative to the axle
+are 90 degree apart,
+so that when the force applied to the driver
+is zero for one cylinder, it is maximum for the other
+It is 60 degrees if there are three cylinders.
+This is illustrated by the graph at right.
+
+<p>
+The red and blue curves represent the driver force
+of each cylinder.
+Using diameter instead of radius
+The cylinder force is 78% relative to the cylinder diameter
+(area = &pi; radius<sup>2</sup> / 2 = &pi; C<sup>2</sup> / 4
+= 0.78 &middot; C<sup>2</sup>) (see below)
+
+<p>
+The green curve represents their sum.
+The orange curves shows the average total force (green)
+over time.
+The average of the complete cycle is equal to the
+maximum force applied by a cylinder,
+~1 based on 78%.
+
+<td valign=top>
+<a href=sinF_w.gif>
+<img src=sinF_w.gif height=150 align=right></a>
+</table>
+
+
+<p>
+<a href=mep_w.gif>
+<img src=mep_w.gif height=150 align=right></a>
+
+Cutoff closes the valve to the cylinder to 
+limit steam consumption and
+take advantage of steam expansion.
+Drawbar force depends on the mean effective pressure (MEP),
+the average cylinder force as the cylinder piston
+moves from one end of the cylinder,
+where full cylinder pressure is applied,
+through the point when cutoff occurs,
+the cylinder valve is closed and
+steam expands at reduced pressure
+as the cylinder volume increases.
+
+<p>
+The MEP curve at right shows that MEP varies from 100 to 50%
+depending on the amount of cutoff,
+without accounting for other factors
+such as changes in temperature or condensation.
+
+<p>
+The 
+<a href=http://www.catskillarchive.com/rrextra/blclas.Html>
+Tractive Force and Hauling Capability</a> page on the Catskill Archive
+provides the following estimate for cylinder:
+
+<blockquote>
+  <img src=http://www.catskillarchive.com/rrextra/Image28.jpg>
+</blockquote>
+
+where
+<blockquote>
+ <table width=30%>
+  <tr> <td> T  <td> = <td> tractive force at rail (lbs-force)
+  <tr> <td> P  <td> = <td> boiler pressure (psi)
+  <tr> <td> C  <td> = <td> cylinder diameter (in)
+  <tr> <td> S  <td> = <td> cylinder stroke (in)
+  <tr> <td> D  <td> = <td> driver diameter (in)
+ </table>
+</blockquote>
+
+<p>
+For two cylinders, the value of C<sup>2</sup> accounts
+for the area of the cylinder pistons.
+The force on the rail
+depends on the ratio of
+the radius of the siderod connection on the driver,
+equal to ratio of the cylinder stroke and driver diameter
+(S / D).
+
+It appears that the factor of 0.85 accounts for various losses (15%).
+
+<p>
+<a href=https://en.wikipedia.org/wiki/Tractive_force#Steam_locomotives>
+Steam Locomotive</a>
+section of Tractive Force under wikipedia
+mentions that value of 0.75 may also be used.
+It further states that the value should be 
+multiplied by 1.5 for a three cylinder and
+by 2.0 for a four cylinder locomotive,
+suggesting the value is for two cylinders.
+This would be consistent with the plot and
+value of 1.0 for a pair of cylinders 90 degrees apart,
+accounting for additional losses.
+
+<!-- ---------------------------------  ---------------- -->
+<a name=resistance></a>
+<h4> 2.2 Train Resistance</h4>
+
+<a href=alco_pg20.jpg target="_blank">
+<img src=alco_pg20.jpg height=200 align=right></a>
+
+<a href=https://images.slideplayer.com/19/5861671/slides/slide_6.jpg
+target="_blank">
+<img src=https://images.slideplayer.com/19/5861671/slides/slide_6.jpg
+height=200 align=right></a>
+
+Bearing resistance in railway cars
+depends on speed and whether car is empty or full.
+It varies from
+2.3 lb/ton at 10 mph to 10.4 at 70 mph for a full car and
+4.5 to 19.8 for an empty car.
+John Armstrong presents the graph at right in his book
+<a href=https://www.amazon.com/Railroad-What-Does-Introduction-Railroading/dp/0911382585/ref=sr_1_1?keywords=armstrong+railroad&qid=1558787652&s=books&sr=1-1
+target="_blank">
+Railroad: What It Is, What It Does</a>
+
+<p>
+A steam locomotive has significantly more moving parts and
+its resistance is higher.
+Its value depends on the weight on its drivers.
+From the table in the ALCO handbook above,
+the locomotive resistance is calculated
+
+<blockquote>
+locoResistance (lb) = 25 * (1 + ton) + 0.26 mph<sup>2</sup>
+</blockquote>
+
+The resistance for the tender is assumed to be similar to a freight car.
+
+<!-- ---------------------------------  ---------------- -->
+<a name=brakes></a>
+<h4> 2.3 Braking</h4>
+
+<a href=https://ntsb.gov/news/events/Documents/2017_casselton_BMG_6_Casselton-Brake_Study.pdf
+target="_blank">
+Train Braking Simulation Study</a> (pg 65)
+discusses Nominal Brake Ratio (NBR),
+the ratio of braking force to loaded car weight.
+It also mentions (pg 76) that NBR is 10% for the legacy car fleet and
+that 14% is the maximum value.
+
+<p>
+A value of 10% of the loaded car weight will be used to determine
+the maximum brake force of a train.
+Some fraction of this will be used for the brake force
+depending on the brake control.
+
+<p>
+That study also mentions that the propagation rate (pg 66) for air
+down the length of the train is 950 ft/sec.
+This suggests that a it takes ~5 sec for the brake signal,
+a drop in air pressure,
+to reach the last car of a 5000 ft train.
+Furthermore,
+<a href=http://www.railway-technical.com/trains/rolling-stock-index-l/train-equipment/brakes/electro-pneumatic-brakes-d.html
+target="_blank">
+Electro-Pneumatics Brakes</a> (under ECP)
+mentions that the reduction in air pressure can take ~60 sec / 150 car.
+
+<p>
+<a href=http://www.oocities.org/picketfence/9549/hrbsw.html
+target="_blank">
+How Do Railway Braking Systems Work</a>
+describes the brake control used
+to drop brake line pressure using
+<i>First Service, Service</i> and <i>Emergency</i> rates,
+increasing brake line pressure using <i>Release</i> and <i>Running</i> and
+<i>Lap</i> to maintain pressure.
+
+<p>
+Another consideration is that braking force cannot be gradually reduced.
+
+<!-- ---------------------------------  ---------------- -->
+<a name=grades></a>
+<h4> 2.4 Grades</h4>
+
+The force on a train going up or down a grade is the product
+of the sine of the angle and the total weight of the train.
+It is subtracted from the drawbar force when going up a grade,
+but added to it when going down.
+
+<p>
+For small angles,
+the sine of the angle is approximately the grade as a percent
+(e.g. 1 ton for a 100 ton train up or down a 1% grade).
+
+
+
+<!-- ------------------------------------------------------  --------------- -->
+<hr>
+<a name=brake></a>
+<h4>Brakes</h4>
+
+Koala brake code attempts to model Westinghouse air brakes.
+
+<p>
+An encoder input determines the brake one of several brake settings.
+Multiple service settings represent 3 position
+the brake may be set to within the service range
+<ul>
+ <li> Release
+ <li> Running
+ <li> Lap
+ <li> Service-1
+ <li> Service-2
+ <li> Service-3
+ <li> Emergency
+</ul>
+
+The Koala model primarily uses the brake setting to determine
+a brake line fill rate (i.e. brkLnFlRat). 
+The fill rate indicates the volume of air (cu.ft.) that the
+brake valve is allowing to exit the brake line or
+be filled from the compressor.
+
+<p>
+The brake line pressure depends on it volume as well as
+the volume of the auxiliary reservoirs on all cars.
+The brake line volume depends on the diameter of the brake line,
+length and number of cars.
+
+<p>
+When brakes are applied (i.e. service) air is vented from the brake line.
+The drop in brake line pressure causes the triple valve to 
+allow air to flow from the auxiliary reservoir
+into the brake piston cylinder.
+When brakes are released,
+air from the compressor enters the brake lines filling
+both the brake lines and auxiliary reservoirs.
+
+<p>
+Air pressure (PSI) is estimated by determining the 
+ratio the volume of air filling the volume of the brake line or
+brake line and reservoirs.
+There is both the unfilled volume of the lines and reservoir, and
+the mass of air filling them.
+It is assumed that a mass of air equal to the volume of a device
+results in one atmosphere of pressure (14.7 PSI)
+
+<p>
+In Service mode, the fill rate is negative,
+air is allows to exit the brake line.
+<i>BrkLnFil</i> represents the mass of air in the line.
+It calculated from the current brake line pressure.
+If the pressure were 29.4 (2 atmosphere),
+the mass of air, <i>brkLnFl</i> is estimated
+to be twice the volume of the brake line. 
+<i>BrkLnFl</i> is then adjust by the fill rate
+for a specific amount of time
+
+<pre>
+    if (0 > brkFlRat)  {                          // dropping
+        brkLnFil  = brkLnVol * brkLnPsi / AtmPsi;
+        brkLnFil += brkFlRat * dMsec / 1000;        // filRate negative
+</pre>
+
+When Released, the fill rate is positive.
+Similar to above,
+the mass of brake line and reservoir air are estimated
+based on the brake line pressure.
+The total fill, <i>brkTotFil</i> is adjusted based on the fill rate and
+the brake line fill, <i>brkLnFl</i> determined
+as a proportion of the total volume.
+
+<pre>
+    else if (0 < brkFlRat)  {              // dropping
+        brkTotFil  = (brkRsvrFil + brkLnVol) * brkLnPsi / AtmPsi;
+        brkTotFil += brkFlRat * dMsec / 1000;       // filRate negative
+        brkLnFil   = brkLnVol * brkTotFil / (brkRsvrFil + brkLnVol);
+</pre>
+
+Subsequent to either dropping or filling air into the brake line
+the brake line pressure is calculated from the result
+<pre>
+        brkLnPsi  = AtmPsi * brkLnFil / brkLnVol;
+</pre>
+
+Limits are applied to values so that the fill amounts can never be 
+less than zero or the brake line pressure greater than the maximum
+pressure.
+
+The actually amount of braking is calculated as a percentage (%)
+of the maximum brake force, the nominal brake ratio (NBR)
+which is assumed to be 10% of the gross weight of the car.
+
+<p>
+Since the brake line pressure is simply used to control
+the triple valve connecting the auxiliary reservoir to the brake piston,
+it is the change in brake line pressure that is used
+to estimate the brake piston pressure.
+
+<p>
+The drop in pressure is calculated from the pressure
+when last in in the Release or Lap brake setting, <i>brkLnPsi_0</i>
+<pre>
+    float dBrkLnPsi = brkLnPsi_0 - brkLnPsi;
+</pre>
+
+The brake percentage is simply a ratio of that difference.
+
+<pre>
+    if (0 < dBrkLnPsi)  {
+        brakePct = BRK_PCT_COEF * dBrkLnPsi;
+        brakePct = 100 < brakePct ? 100 : brakePct;
+</pre>
+
+There is no doubt room for improvement in the above model.
+It is assumed to be "good enough".
+Some possible weaknesses are that the fill rate when positive
+probably depends on the difference in pressure
+between the max pressure and current brake line pressure.
+In other words it gets smaller as the brake line pressure
+is closer to max.
+
+<p>
+It's also not clear if estimating the brake line pressure
+from the air mass to device volume is accurate
+but seems right based on the ideal gas law, PV/T.
+
+<h4>Independent Brakes</h4>
+
+My understanding is the independent brake handle
+directly controls the flow of air
+from the air reservoir in the locomotive
+to the brake cylinders on the locomotive
+as the triple valve does on cars.
+Presumably there is a gauge indicating the cylinder pressure.
+And presumably the brakes are released fully
+just as the air brakes are.
+
+<p>
+Seems like a somewhat different algorithm is needed.
+
+<!-- --------------  --------------- -->
+<h4> Brake Table </h4>
+
+The brake rates (cu.ft./min) can be adjusted in brakes.cpp.
+there are separate values for recharge and discharge settings.   
+
+<p>
+<i>Self-lapping</i> means it automatically laps when the pressure has dropped a specific amount.    there are drop values (psi) for SVC 1 and 2.   current table values are 10 and 20, but i thought i read a value between 6-8 is more common for SVC 1.
+
+<p>
+Values are guesses, waiting for some expert advice
+
+<blockquote><pre>
+typedef struct {
+    float rateRel;      // cu.ft. / min
+    float rateSvc1;
+    float rateSvc2;
+    float rateSvc3;
+    float rateEmer;
+   
+    int   dropSvc1;
+    int   dropSvc2;
+
+    const char* desc;
+} Model_t;
+
+Model_t models [] = {
+    { 0.67, -0.85, -0.95, -1.05, -1.5, 10, 20, "self-lapping" },
+    { 0.60, -0.85, -0.95, -1.05, -1.5,  0,  0, "non-self-lapping" },
+};
+</blockquote><p/re>
+
+<i>Models []</i> is a table for different brakes (incomplete).
+Rates probably depend on engine size and train length it's likely to pull.
+These values may become scaling factors
+with a max brake rate parameter stored along with engine parameters.
+
+<!-- ------------------------------------------------------  --------------- -->
+<a name=buttons></a>
+<h4> Buttons </h4>
+
+<table border=0 align=right> <tr><td>
+<pre>
+    { B_MODE, B_F3,   B_F7,   B_MENU },
+    { B_F0,   B_F4,   B_F8,   B_SEL  },
+    { B_F1,   B_F5,   B_F9,   B_UP   },
+    { B_F2,   B_F6,   B_F10,  B_DN   },
+</pre>
+</table>
+
+The sixteen buttons on both the protoboard and PCB
+are arranged in a matrix but
+on the final model may be arranged differently.
+
+While both have the same ordering for rows, top to bottom,
+the PCB board has column 1 on the left side like the schematic
+but the proto board has column 1 on the right side.
+The code describes the buttons 
+<!-- ------------------------------------------------------  --------------- -->
+<table width=100%> <tr><td> </table>
+<hr>
+<a name=steamEng></a>
+<h4> Simulating a Steam Engine </h4>
+
+There are several interesting aspects to simulating
+the motion of a train pulled by a steam engine.
+Of course, the most challenging is modeling the steam engine itself.
+
+<p>
+Brakes, both air and independent are interesting to model,
+recognizing that air in a brake line is used to both
+build up pressure in reservoir tanks in each car,
+as well as control the filling of brake cylinders
+from those tanks and releasing air from the cylinders.
+
+<p>
+Tying it all together are Newton's Laws of motion.
+Newton's 2nd Law, F= ma, relates force (F), acceleration (a) and mass (m).
+
+<p>
+While the gas pedal on a car does control the speed of a car,
+it doesn't dictate that speed.
+It actually controls the force produced by the engine
+which accelerates a car to speed.
+The gas pedal is pressed farther toward the floor
+when starting to accelerate the car quickly
+than it is when maintaining the speed of the car.
+
+<p>
+There are four major forces affecting a train:
+<dl> tractive effort (TE) produced by the engine
+<dl> resistance of the train
+<dl> brakes
+<dl> grade
+
+Of these four force, only two, TE and grade
+can cause a train to move.
+The other two, resistance and brake
+must be overcome to cause motion.
+In other words,
+they are only a force when the train is moving.
+
+<p>
+Combining these four forces and
+dividing that sum by the mass of a train
+results in an acceleration
+causing a train to either gain or lose speed.
+Computing this speed and controlling a model
+results in more realistic behavior.
+
+<!-- ---------------------------------------------  ------------------------ -->
+<h4> Steam Engine </h4>
+
+Tractive effort of a steam locomotive
+is generated by steam pressure on the cylinder pistons.
+Determining the cylinder pressure is the challenge.
+The code estimates this pressure in <i>cylinderPressure()</i>.
+Bear in mind that there are typically two cylinders.
+
+<p>
+The throttle determines the <i>flow</i> (lbs/hr)
+of steam through the piping into the steam chests next to the cylinders.
+
+Correspondingly,
+the amount of steam entering the cylinders is computed.
+The amount (lbs) of steam in the steam chest
+is the sum  of the <i>flow</i> 
+less the amount entering the cylinders, <i>consume</i>.
+subtracted from the <i>fil</i>.
+The steam chest pressure is computed from the density of steam
+in the steam chest and the steam chests volume.
+
+<p>
+The pressure of the steam entering the cylinder is assumed
+to be equal to the steam chest pressure.
+But the cylinder pressure depends on <i>cutoff</i>,
+the portion of the cylinder cycle that the valve is open.
+Even after the valve closes,
+there is pressure in the cylinders
+but it decreases as the piston moves,
+expanding the volume within the cylinder
+that the steam occupies.
+
+<p>
+Once the cylinder valve is closes,
+the mean effective pressure (MEP) is calculated
+based on the amount of steam that can fill the cylinder
+while the valve is open and
+the volume after it is closed depending on the piston Position.
+
+<p>
+Ignoring partial cylinder cycles for the moment,
+the MEP is used to determine the force produced by the cylinder
+depending on the surface area (cu.ft.) of the piston.
+The TE is calculated
+based on the mean perpendicular distance
+the main is from the center of the driver wheel and
+the diameter of the driver.
+
+Bear in mind that as the perpendicular distance increases
+for one cylinder it increases for the other.
+
+<p>
+At startup,
+it is important to consider partial cylinder cycles,
+whether cylinder pressure is at full steam chest pressure or expanding.
+
+<p>
+There is no doubt that this approach overlooks many details and
+has computation errors for the approaches followed:
+<ul>
+ <dl> difference in cylinder and steam chest pressure
+        necessary to force steam into the cylinder,
+ <dl> rate steam travels through piping and can replenish the steam chest,
+ <dl> partial cycle computations
+ <dl> steam temperature losses
+ <dl> ...
+</ul>
+
+
+<h4> Throttle </h4>
+
+Steam flow is assumed to be similar to Ohms Law,
+that the flow is comparable to <i>current</i>,
+which is proportional to the pressure difference, <i>voltage</i>  and
+inversely proportional to the size of the opening, <i>resistance</i>.
+
+<!-- ------------------------------------------------------  --------------- -->
+<table width=100%> <tr><td> </table>
+<hr>
+<a name=hardware></a>
+<h4> Hardware Prototype </h4>
+
+The following are a schematic for prototype
+including all interfaces and
+corresponding PCB (right above).
+An assembled prototype is pictured above.
+
+<table width=100%> <tr><td> </table>
+<img src= http://www.pacificsouthern.org/Members/GregCiurpita/Koala/Images/200828_schem.png width=100%>
+
+<p>
+<img src= http://www.pacificsouthern.org/Members/GregCiurpita/Koala/Images/200828_pcb.png width=300 align=right>
+
+<!-- ------------------------------------------------------  --------------- -->
+<a name=history></a>
+<h4> Development History </h4>
+
+<ul>
+ <li> Steam Locomotive Simulation (April 2019)
+  <ul>
+   <li> AWK model of steam locomotive physics,
+            steam generation and cylinder force
+   <li> <a href=https://github.com/gciurpita/steamThrottle target="_blank">
+        github.com/gciurpita/steamThrottle</a>
+  </ul>
+
+ <li> Koala (4/5/20)
+  <ul>
+   <li> Bunza prototype
+   <li> WiFi connectivity
+   <li> menu & 4 buttons
+   <li> JMRI connectivity
+   <li> Bluetooth connectivity
+   <li> throttle/reverser
+   <li> control of loco on track via NCE USB adapter
+  </ul>
+
+ <li> Koala2 (6/21/20)
+  <ul>
+   <li> button matrix
+   <li> attempt at brake input
+   <li> problems using of TTGO-Koala
+  </ul>
+
+ <li> Koala3 (7/12/20)
+  <ul>
+   <li> purely serial control to avoid need for hardware interfaces
+   <li> basic braking and physics controlling train speed
+   <li> <a href=https://github.com/gciurpita/Koala3 target="_blank">
+        github.com/gciurpita/Koala3</a>
+  </ul>
+
+ <li> DVT (8/15/20)
+  <ul>
+   <li> design, verification and test code
+   <li> assess TTGO-Koala issues and re-allocation of pins
+   <li> dual encoder input using interrupts
+   <li> 4 analog inputs (throttle, reverser, whistle, grade)
+   <li> button matrix
+   <li> common pins.h
+  </ul>
+
+ <li> Koala 4 (9/19/20)
+  <ul>
+   <li> merge of DVT pin allocation and Koala 3 braking and physics
+   <li> <a href=koala_0626.zip>Koala 0626.zip</a>
+  </ul>
+</ul>
+
+<!-- ------------------------------------------------------  --------------- -->
+<a name=notes></a>
+<h4> Notes </h4>
+
+<ul>
+ <li> <a href=references.html>references</a>
+</ul>
+

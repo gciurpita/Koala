@@ -1,7 +1,8 @@
 
 #include "vars.h"
 
-const char *version   = "210324a";
+const char *version   = "220607f";
+
 
 int      dccAdr;
 
@@ -49,7 +50,7 @@ int      tractEff;
 int      tractEffMax;
 
 int      whistle;
-int      wtCar;
+int      wtCar   = 50;
 
 // -----------------------------------------------------------------------------
 // list of vars to display
@@ -90,7 +91,7 @@ int      locoIdx         = 0;
 char     ssid [MAX_CHAR] = "WiFi-ssid";
 char     pass [MAX_CHAR] = "WiFi-password";
 
-char     host [MAX_CHAR] = "192.168.1.100";
+char     host [MAX_CHAR] = "192.168.0.41";
 int      port            = 12080;
 
 

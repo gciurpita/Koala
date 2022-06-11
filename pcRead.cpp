@@ -173,6 +173,10 @@ _cmdMode (
             cfgSave (cfgFname);
             break;
 
+        case 's':
+            state = val;
+            break;
+
         case 't':
             throttle = val;
             throttle = MAX_THR < throttle ? MAX_THR : throttle;

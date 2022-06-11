@@ -14,6 +14,7 @@
 #include "engine.h"
 #include "encoder.h"
 #include "file.h"
+#include "keypad.h"
 #include "koala.h"
 #include "menu.h"
 #include "pcRead.h"
@@ -22,7 +23,7 @@
 #include "physics.h"
 #include "vars.h"
 
-unsigned int debug = DBG_ENGINE;
+unsigned int debug = DBG_BRAKE;
 
 // -----------------------------------------------------------------------------
 // Initialize the OLED display using Wire library
@@ -263,7 +264,13 @@ static void jmriConnect (void)
     Serial.println (s);
 #endif
 
-    if (wifi.connect(host, port))  {
+    if (button)  {
+        state |= ST_JMRI;
+        dispOled("JMRI abort", 0, 0, 0, CLR);
+        delay (2000);
+    }
+
+    else if (wifi.connect(host, port))  {
         state |= ST_JMRI;
 
         dispOled("JMRI connected", 0, 0, 0, CLR);
@@ -272,9 +279,6 @@ static void jmriConnect (void)
 
         delay (1000);
     }
-
-    dispOled(0, host, s0, 0, CLR);
-    delay (1000);
 }
 
 // ---------------------------------------------------------
@@ -315,27 +319,18 @@ int jmriFuncKey (
 // connect to wifi
 static void wifiConnect (void)
 {
-    if (WL_CONNECTED == WiFi.begin (ssid, pass))  {
+    if (WL_CONNECTED == WiFi.status ())  {
         state |= ST_WIFI;
 
         IPAddress ip = WiFi.localIP ();
         sprintf (s, "%u.%u.%u.%u", ip[0], ip[1], ip[2], ip[3]);
 
-        dispOled("WiFi connected", 0, s, 0, CLR);
- //     serverInit ();
-        delay (1000);
+        dispOled("WiFi connected", ssid, s, 0, CLR);
     }
-    else  {
- //     delay (1000);
+    else
         dispOled("WiFi connecting", ssid, pass, 0, CLR);
-#if 0
-        sprintf ((char*)"WiFi connecting, %s, %s", ssid, pass);
-        Serial.println (s);
-#endif
 
-        delay (1000);
-        dispOled(0, ssid, pass, 0, CLR);
-    }
+    delay (1000);
 }
 
 // ---------------------------------------------------------
@@ -359,12 +354,15 @@ static void wifiReceive (void)
 
 // ---------------------------------------------------------
 // common routine for sending strings to wifi and flushing
+int dbgWifi = 1;        // can be set in simulation
 void
 wifiSend (
     const char*  s )
 {
-    Serial.print ("wifiSend: ");
-    Serial.println (s);
+    if (dbgWifi)  {
+        Serial.print ("wifiSend: ");
+        Serial.println (s);
+    }
 
     wifi.println (s);
     wifi.flush ();
@@ -401,8 +399,23 @@ void loop()
     }
 
     // -------------------------------------
+    potsRead ();
+    buttonsChk ();
+
+    if (ST_DVT & state)  {
+        byte row = 0;
+        byte col = 0;
+        if (NO_KEY != keyscan (&row, &col))
+            button = 10*(1+row) + col;
+        else
+            button = 0;
+
+        dispInputs ();
+    }
+
+    // -------------------------------------
     // attempt wifi connection
-    if (! (ST_WIFI & state) && ! (ST_CFG & state))  {
+    else if (! (ST_WIFI & state) && ! (ST_CFG & state))  {
         wifiConnect ();
     }
 
@@ -413,18 +426,8 @@ void loop()
     }
 
     // -------------------------------------
-    else if (ST_MENU & state)  {
-            menu (M_NULL);
-    }
-    else if (ST_DVT & state)
-            dispInputs ();
-
-    // -------------------------------------
     // run engine
-    else  {
-        potsRead ();
-        buttonsChk ();
-
+    else if (! (ST_MENU & state))  {
         chkLoco ();
 
 #define DispInterval    0
@@ -457,7 +460,6 @@ void loop()
 
     // -------------------------------------
     // scan external interfaces
- // server ();
     wifiReceive ();
 
     // check serial I/Fs and update state appropriately
@@ -479,15 +481,20 @@ setup (void)
     Serial.print   (" - ");
     Serial.println (version);
 
+    // -------------------------------------
 #ifdef BT
     serialBT.begin (name);
 #endif
 
     SPIFFS.begin (true);
-#if 1
+#if 0
     if (! cfgLoad (cfgFname))
         cfgSave (cfgFname);
 #endif
+
+    WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE, INADDR_NONE);
+    WiFi.setHostname (name);
+    WiFi.begin (ssid, pass);
 
     // init hardware
     pinMode (LED, OUTPUT);
@@ -495,6 +502,7 @@ setup (void)
     buttonsInit ();
     encoderInit ();     // configures interrupts
 
+    // -------------------------------------
     // init OLED display
     display.init();
  // display.flipScreenVertically();
@@ -503,15 +511,14 @@ setup (void)
     display.setTextAlignment(TEXT_ALIGN_LEFT);
     display.setColor(WHITE);
 
-    // -------------------------------------
     dispOled(name, version, 0, 0, CLR);
+    delay (1000);                           // also for WiFi
 
-    state = 0;
-
+    // -------------------------------------
     // if button pressed during startup, skip wifi/jmri connections
     buttonsChk ();
     if (button)
         state |= ST_WIFI | ST_JMRI;
-
-    delay (1000);
+    else
+        state  = 0;
 }
