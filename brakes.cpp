@@ -6,6 +6,7 @@
 
 #include "brakes.h"
 #include "encoder.h"
+#include "pins.h"
 #include "vars.h"
 
 int   dbgBr       = 0;
@@ -35,10 +36,10 @@ const char * indBrkStr [] = {
 // ---------------------------------------------------------
 // determine brake position
 
-#if 1
-int stepsPdetent = 2;
-#else
+#ifdef Board1
 int stepsPdetent = 1;
+#else
+int stepsPdetent = 2;
 #endif
 
 typedef struct {
