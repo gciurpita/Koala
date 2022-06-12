@@ -487,7 +487,7 @@ setup (void)
 #endif
 
     SPIFFS.begin (true);
-#if 0
+#if 1
     if (! cfgLoad (cfgFname))
         cfgSave (cfgFname);
 #endif
