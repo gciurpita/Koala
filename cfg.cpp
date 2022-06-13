@@ -169,6 +169,41 @@ cfgDispAll (
 };
 
 // ---------------------------------------------------------
+int
+cfgDump (
+    const char *filename )
+{
+    int res = 1;
+    printf ("%s: %s\n", __func__, filename);
+
+    FILE * fp = fopen (filename, "rb");
+    if (NULL == fp)  {
+        perror ("cfgLoad - fopen");
+        res = 0;
+        goto done;
+    }
+
+    byte buf [128];
+    int  nread;
+    while ((nread = fread ((void*) buf, 1, sizeof(buf), fp)))  {
+        for (int n = 0; n < nread; n++)  {
+            if (! (n % 16))
+                printf ("\n%s: ", __func__);
+            printf (" %02x", buf [n]);
+        }
+        printf ("\n");
+
+        if (nread < sizeof(buf))
+            break;
+    }
+
+done:
+    fclose (fp);
+    return res;
+}
+
+
+// ---------------------------------------------------------
 #define BUF_LEN   100
 
 void

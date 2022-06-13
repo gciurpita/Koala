@@ -1,20 +1,196 @@
-<title>Koala SW & HW Design</title>
+<title>Description of Software and Hardware</title>
+<h3>Description of Software and Hardware</h3>
 
+<ul>
+ <li> <a href=#swarch> Software Architecture
+  <ul>
+    <li> <a href=#config>  Configuration Parameters</a>
+    <li> <a href=#menu>    Menu</a>
+    <li> <a href=#keypad>  Keypad and Buttons</a>
+    <li> <a href=#encoder>  Encoder and Potentiometer</a>
+    <li> <a href=#pcread>   Pcread</a>
+    <li> <a href=#motion>  Physics of Motion</a>
+     <ul>
+      <li> <a href=#steamEng> Steam Engine</a>
+      <li> <a href=#brake>  Brakes</a>
+     </ul>
+  </ul>
+ <li> <a href=#hardware> Hardware Prototype</a>
+</ul>
+
+<!-- ------------------------------------------------------  --------------- -->
+<hr>
+<table align=right>
+  <tr> <td> June 2022
+  <tr> <td> Greg Ciurpita
+</table>
+
+<a name=swarch></a>
+<h4> Software Architecture </h4>
+
+The throttle software is written primarily in C and
+follows the basic Arduino model
+of having <i>setup()</i> which runs once at startup and
+<i>loop()</i> which runs repeatedly.
+These routines are in <i>Koala.ino</i> 
+which handles various modes of operating including
+
+<blockquote>
+ <table border=0 cellspacing=0>
+  <tr><td> connecting to WiFi,
+  <tr><td> connecting to JMRI,
+  <tr><td> running the engine model, or
+  <tr><td> running Design Verification Test (DVT) code
+            which simply displays the control and keypad inputs
+ </table>
+</blockquote>
+
+Numerous files are used to capture
+various functionality and sub-functionality,
+making it more easily located:
+
+<blockquote>
+ <table border=0 cellspacing=0 width=400>
+<!--
+   <tr><td> brakes.cpp   <td> air and independent brakes
+   <tr><td> buttons.cpp  <td> translation of keypress to button value
+   <tr><td> cfg.cpp      <td> handles parameters
+   <tr><td> encoder.cpp  <td> encoder functions
+   <tr><td> eng.cpp      <td> engine descriptions
+   <tr><td> engine.cpp   <td> steam engine model functions
+   <tr><td> file.cpp     <td> file and directory utilities
+   <tr><td> keypad.cpp   <td> scans keypad matrix
+   <tr><td> menu.cpp     <td> menu functions
+   <tr><td> menus.cpp    <td> menu descriptions
+   <tr><td> pcRead.cpp   <td> serial command interpreter
+   <tr><td> physics.cpp  <td> application of Newton's Equations
+   <tr><td> pots.cpp     <td> read potentiometers
+   <tr><td> rollRes.cpp  <td> computer rolling resistance of cars
+   <tr><td> utils.cpp    <td> miscellaneous functions
+   <tr><td> vars.cpp     <td> all common variables
+ -->
+
+   <tr><td> encoder.cpp  <td> encoder functions
+   <tr><td> pots.cpp     <td> read potentiometers
+
+   <tr><td colspan=2> <hr>
+   <tr><td> buttons.cpp  <td> translation of keypress to button value
+   <tr><td> keypad.cpp   <td> scans keypad matrix
+
+   <tr><td colspan=2> <hr>
+   <tr><td> cfg.cpp      <td> handles parameters
+   <tr><td> file.cpp     <td> file and directory utilities
+
+   <tr><td colspan=2> <hr>
+   <tr><td> menu.cpp     <td> menu functions
+   <tr><td> menus.cpp    <td> menu descriptions
+
+   <tr><td colspan=2> <hr>
+   <tr><td> physics.cpp  <td> application of Newton's Equations
+   <tr><td> brakes.cpp   <td> air and independent brakes
+   <tr><td> eng.cpp      <td> engine descriptions
+   <tr><td> engine.cpp   <td> steam engine model functions
+   <tr><td> rollRes.cpp  <td> computer rolling resistance of cars
+
+   <tr><td colspan=2> <hr>
+   <tr><td> pcRead.cpp   <td> USB/Bluetooth serial command interpreter
+
+   <tr><td colspan=2> <hr>
+   <tr><td> utils.cpp    <td> miscellaneous functions
+   <tr><td> vars.cpp     <td> all common variables
+ </table>
+</blockquote>
+
+<!-- ------------------------------------------------------  --------------- -->
+<hr>
+<a name=config></a>
+<h4> Configuration Parameters </h4>
+
+<!-- ------------------------------------------------------  --------------- -->
+<hr>
+<a name=menu></a>
+<h4> Menu </h4>
+
+The code attempts to implement a   generic menu system
+that allows any number of sub-menus, items within those sub-menus and
+various options and types of options.
+This requires that each menu element needs to identify its type,
+a pointer to a sub-menu, the next item within an item and type of item, 
+a boolean, integer, string.
+
+<p>
+While button presses can more obviously advance to the next sub-menu or item,
+editing integers and strings is more tedious.
+There are menu routines to scroll across a multi-digit value and
+increment that digit, as well as
+scroll across a string and select both capitalized and uncapitalized letters,
+digits and special character, any possible ASCII character.
+It is obviously tedious to use buttons to select one of over a hundred
+possible characters.
+In these edit modes, buttons have different purposes.
+
+<p>
+Also needed are stacks tracking the progression through the menu
+easily allowing back up to the previous item.
+
+<!-- ------------------------------------------------------  --------------- -->
+<hr>
+<a name=keypad></a>
+<h4> Keypad and Buttons </h4>
+
+The keypad routines supports at least 16 buttons.
+It conventionally handles this by organizing the buttons in a matrix
+or four rows and four columns,
+requiring only eight I/O lines instead of 16.
+
+<p>
+The button routines map a keypress identified by row and column
+to a specific value defined in a table.
+
+<!-- ------------------------------------------------------  --------------- -->
+<hr>
+<a name=encoder></a>
+<h4> Encoder and Potentiometer </h4>
+
+The encoder and pot routines capture values for these devices
+in global variables which are used whereever needed.
+<i>AnalogRead()</i> is used to read the voltage across the pot.
+
+<p>
+An interrupt service routine (ISR) is used to recognize changes
+in one of the encoder outputs,
+reading the other input to determine the direction
+which results in either incrementing or decrementing a position value.
+The brake code tracks the range of positions
+which along with position are unknown at startup.
+The final design will limit the travel of the knob,
+once both limits are reached, they should not change.
+
+<!-- ------------------------------------------------------  --------------- -->
+<hr>
+<a name=pcread></a>
+<h4> Pcread </h4>
+
+<i>Pcread()</i> was developed for debugging
+through the Arduino IDE serial monitor
+but can be used generically with an serial application
+including Bluetooth serial interfaces.
+It will also be used to handle commands for setting parameters
+that are set more tediously through the menu.
+
+<p>
+Commands are a single upper or lower case letter,
+optionally preceeded by a multidigit decimal value.
+Commands may simply change the value of variable or
+invoke functions with arguments.
+
+<!-- ------------------------------------------------------  --------------- -->
+<hr>
 <table align=right>
   <tr> <td> November 12, 2020
   <tr> <td> Greg Ciurpita
 </table>
 
-<ul>
- <li> <a href=#motion> Physics of Motion</a>
- <li> <a href=#brake>  Brakes</a>
- <li> <a href=#buttons>  Buttons</a>
- <li> <a href=#steamEng> Steam Engine</a>
- <li> <a href=#hardware> Hardware</a>
-</ul>
-
-<!-- ------------------------------------------------------  --------------- -->
-<hr>
 <a name=motion></a>
 <h4> Physics of Motion </h4>
 
@@ -136,14 +312,14 @@ maximum force applied by a cylinder,
 ~1 based on 78%.
 
 <td valign=top>
-<a href=sinF_w.gif>
-<img src=sinF_w.gif height=150 align=right></a>
+<a href=Images/sinF_w.gif>
+<img src=Images/sinF_w.gif height=150 align=right></a>
 </table>
 
 
 <p>
-<a href=mep_w.gif>
-<img src=mep_w.gif height=150 align=right></a>
+<a href=Images/mep_w.gif>
+<img src=Images/mep_w.gif height=150 align=right></a>
 
 Cutoff closes the valve to the cylinder to 
 limit steam consumption and
@@ -212,8 +388,8 @@ accounting for additional losses.
 <a name=resistance></a>
 <h4> 2.2 Train Resistance</h4>
 
-<a href=alco_pg20.jpg target="_blank">
-<img src=alco_pg20.jpg height=200 align=right></a>
+<a href=Images/alco_pg20.jpg target="_blank">
+<img src=Images/alco_pg20.jpg height=200 align=right></a>
 
 <a href=https://images.slideplayer.com/19/5861671/slides/slide_6.jpg
 target="_blank">
@@ -636,21 +812,57 @@ inversely proportional to the size of the opening, <i>resistance</i>.
 
 <!-- ------------------------------------------------------  --------------- -->
 <table width=100%> <tr><td> </table>
-<hr>
+<hr> <hr>
 <a name=hardware></a>
-<h4> Hardware Prototype </h4>
+<h3> Hardware Prototype </h3>
 
-The following are a schematic for prototype
-including all interfaces and
-corresponding PCB (right above).
-An assembled prototype is pictured above.
-
-<table width=100%> <tr><td> </table>
-<img src= http://www.pacificsouthern.org/Members/GregCiurpita/Koala/Images/200828_schem.png width=100%>
+The images below show the assembled prototype, board layout, ESP32 Wrover pins and
+a schematic of the current design.
+Note that the pinouts on the Wrover board are not sequential and
+are labeled as the ESP32 chip pin they are routed to.
 
 <p>
-<img src= http://www.pacificsouthern.org/Members/GregCiurpita/Koala/Images/200828_pcb.png width=300 align=right>
+On the printed circuit board (PCB),
+the pots along the bottom edge are, from left:
+reverser, whistle quill (pitch), throttle and grade.
+The encoders at top are air and on right edge is independent brakes.
+An OLED display is attached to connector on left edge of board.
 
+<p>
+The switches on the PCB are not labeled consistent with the schematic.
+SW0 is the top right, SW3 the top left and SW12, Menu, is bottom right.
+
+<blockquote>
+  <font face=Courier>
+ <table border=0 cellspacing=0 width=300>
+  <tr>   <td> B_F2     <td> B_F1     <td> B_F0     <td> B_MODE
+  <tr>   <td> B_F6     <td> B_F5     <td> B_F4     <td> B_F3
+  <tr>   <td> B_F10    <td> B_F9     <td> B_F8     <td> B_F7
+  <tr>   <td> B_DN     <td> B_UP     <td> B_SEL    <td> B_MENU
+ </table>
+ </font>
+</blockquote>
+
+<table border=0 cellspacing=0 width=100%>
+<tr>
+ <td align=center>
+  <a href=Images/IMG_1947a.jpg  target="_blank">
+  <img src=Images/IMG_1947a.jpg height=250></a>
+
+ <td align=center>
+  <a href=Images/200828_pcb.png  target="_blank">
+  <img src=Images/200828_pcb.png height=250></a>
+
+ <td align=center>
+  <a href=Images/wrover.jpg  target="_blank">
+  <img src=Images/wrover.jpg height=250></a>
+
+<tr><td colspan=3> &nbsp;
+<tr><td colspan=3>
+  <img src= Images/200828_schem.png width=100%>
+</table>
+
+<table width=100%></table>
 <!-- ------------------------------------------------------  --------------- -->
 <a name=history></a>
 <h4> Development History </h4>
@@ -706,12 +918,3 @@ An assembled prototype is pictured above.
    <li> <a href=koala_0626.zip>Koala 0626.zip</a>
   </ul>
 </ul>
-
-<!-- ------------------------------------------------------  --------------- -->
-<a name=notes></a>
-<h4> Notes </h4>
-
-<ul>
- <li> <a href=references.html>references</a>
-</ul>
-

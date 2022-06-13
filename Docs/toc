@@ -1,5 +1,23 @@
-    - user manual
+    - ReadMe.html on github
         - what throttle does and doesn't do
+            - JMRI compatible WiFi throttle
+            - separate controls for throttle, reverser, independent & air brakes
+            - targets micro operation
+            - realistic model of steam engine controls
+            - realistic model of independent & air brakes
+            - models different locomotive parameters
+
+        - (link to) how to copy from github
+
+    - user manual
+        - building hardware
+            - schematic
+        - installing
+            - Arduino IDE
+            - adding ESP32 support
+            - board & partition setting
+            - USB cable connection & com port selection
+            - programming
         - startup
         - controls
         - configuration

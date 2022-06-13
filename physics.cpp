@@ -156,7 +156,7 @@ int           brkMode )
 #endif
 
     tonnage = (cars * wtCar);
-    wtTot   = tonnage + (pEng->wtLoco + pEng->wtTndr) * LbPton;
+    wtTot   = (tonnage + pEng->wtLoco + pEng->wtTndr) * LbPton;
 
     // -------------------------------------
     // forces

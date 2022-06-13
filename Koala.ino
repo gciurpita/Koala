@@ -68,18 +68,18 @@ char s [S_SIZE];
 //     send dispatch/release to jmri
 void chkLoco (void)
 {
-    static int  locoLst = -1;
+    static int  locoAdrLst = -1;
 
-    if (locoLst == locoIdx)
+    if (locoAdrLst == locos [locoIdx].adr)
         return;
 
-    dccAdr   = locos [locoIdx].adr;
+    dccAdr   = locoAdrLst = locos [locoIdx].adr;
     mphToDcc = locos [locoIdx].mphToDcc;
     pEng     = & engs [locos [locoIdx].engIdx];
 
     engineInit ();
 
-    sprintf (s, "%s: locoLst %d to locoIdx %d,", __func__, locoLst, locoIdx);
+    sprintf (s, "%s: new address %d,", __func__, dccAdr);
     Serial.println (s);
 
     // release all
@@ -90,8 +90,6 @@ void chkLoco (void)
     wifiSend (s);
 
     // reset throttle !!!!!!!!!!!!!!!!!!!!!
-
-    locoLst = locoIdx;
 }
 
 // ---------------------------------------------------------
@@ -487,7 +485,7 @@ setup (void)
 #endif
 
     SPIFFS.begin (true);
-#if 0
+#if 1
     if (! cfgLoad (cfgFname))
         cfgSave (cfgFname);
 #endif

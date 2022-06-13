@@ -6,8 +6,15 @@
 # define ADC_REV      36
 # define ADC_THR      39
 
+# define Board1
+
+#ifdef Board1
+# define Enc_A_Clk    23
+# define Enc_A_Dt     18
+#else
 # define Enc_A_Clk    18
 # define Enc_A_Dt     23
+#endif
 
 # define Enc_B_Clk    32
 # define Enc_B_Dt     26
