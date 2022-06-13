@@ -196,6 +196,10 @@ _cmdMode (
             fileDelete ();
             break;
 
+        case 'Z':
+            cfgDump (cfgFname);
+            break;
+
         case '\n':      // ignore
         case '\r':      // ignore
             if (1 == idx)
