@@ -143,6 +143,8 @@ void _airBrakes (
 
     switch (brakeAir)  {
     case BRK_A_REL:
+        brkFlRat   = 4.0;
+        break;
     case BRK_A_RUN:
         brkFlRat   = pMdl->rateRel * perMin;
         brkLnPsi_0 = brkLnPsi;
