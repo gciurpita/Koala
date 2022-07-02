@@ -6,7 +6,7 @@ April 2022 <br> Greg Ciurpita
 
 <ul>
  <li> <a href=#cutoff>  Going Faster With Less Steam</a>
- <li> <a href=#brakes>  Independent and Air Brakes </a>
+ <li> <a href=#brakes>  Brakes: Air and Independent </a>
 </ul>
 
 <!-- ------------------------------------------------------  --------------- -->
@@ -49,7 +49,7 @@ Knowing how to adjust the reverser as the locomotive gains speed, and avoiding s
 <!-- ------------------------------------------------------  --------------- -->
 <hr>
 <a name=brakes></a>
-<h4> Independent and Air Brakes </h4>
+<h4> Brakes: Air and Independent </h4>
 
 The independent brake pressure on the loco directly controls the brake, unlike the auto/air brake.   The brake force increases as the independent brake pressure increases.      suggest you try using the independent brakes with REL-Q(uick), REL-S(low), LAP, APP-S and APP-Q.  Last columns in output.
 
@@ -57,16 +57,82 @@ The independent brake pressure on the loco directly controls the brake, unlike t
 Auto/air brakes are like DCC in that the brake line both provides the impetus of the brakes, pressurizing the air reservoir in each car as well as signaling when to apply and release brakes.
 
 <p>
+<a href=http://www.railway-technical.com/trains/rolling-stock-index-l/train-equipment/brakes>
+<img src=http://www.railway-technical.com/_Media/whse-brake-block-v1_med_hr_med.png align=right></a>
+
+The locomotive has air pumps and tanks
+to supply air to brake line connecting each car of the train.
+Each car has a reservoir, triple valve and brake cylinders.
+Air from the brake line supplies air to the reservoirs of each car.
 Normal operation is to pressurize the brake line and reservoirs to 90 lb.
 
 <p>
-When the brake line pressure is allowed to drop (SVC or EMER), a valve in each car opens, allowing air from the reservoir to enter the brake cylinder applying pressure to the brakes (shoes).    Maximum pressure is when brake cylinder pressure is just 25 psi.
+When the triple valve detects a drop in brake line pressure,
+a difference in pressure between the reservoir and brake line,
+it allows air from the reservoir to slow into the brake cylinder
+which applies force the brakes contacting the wheels.
+The triple valve stops the flow of air into the brake cylinder
+when the reservoir pressure equals the brake line pressure.
+The brake cylinder pressure is limited to 25(?) psi.
 
 <p>
-Setting the brakes to LAP, maintains the brake line and brake line pressure.    And allows a further decrease in brake line pressure and corresponding increase in brake cylinder pressure.
+As soon as the triple detects an increase in brake line pressure,
+it releases the air from the brake cylinders.
+Air will flow from the brake line into the reservoirs
+when the brake line pressure exceeds the reservoir pressure.
 
 <p>
-An increase of brake line pressure (REL position) causes the release of brake cylinder pressure and replenishment of reservoir.
+Various brake lever setting control the rate of air into or
+released from the brake line.
+Setting the brakes to LAP, maintains the brake line and brake line pressure.    
+It takes time for a change in brake line pressure to propagate
+down the length of a train.
 
 <p>
-So a single application of brakes may drop the brake line pressure from 90 to 65.   A slight increase in brake line pressure totally releases the brakes.  For example, back up to 70 psi.   A subsequent application further reduces the brake line and reservoir pressure to 45 psi,  and so on.
+A quick reduction in brake pressure will affect
+the cars closest to the locomotive causing them to apply their brakes
+long before cars at the end of the train see a change in pressure.
+The various service settings, SVC1, SVC2
+allow a gradual reduction in pressure and
+braking to occur more evenly from every car in the train.
+
+<p>
+After the release of brakes,
+air is needed to replenish the reservoirs
+allowing additional brake applications
+A single application of brakes
+may drop the brake line pressure from 90 to 65 PSI.
+A subsequent application after releasing the brakes
+and without much time to replenish the reservoirs
+may further reduce  reservoir pressure to 45 psi.
+The number of brake applications is therefore limited.
+
+<p>
+<a href=Images/220702a_brks.png target="_blank">
+<img src=Images/220702a_brks.png width=450 align=right></a>
+The plot illustrates the brake line pressure (violet),
+braking force (red) which is negative and
+the air brake level setting (magenta)
+
+<p>
+The brake line pressure starts at zero but rapidly increases to 90 PSI.
+The application of SVC1 causes a decrease in brake line pressure and
+corresponding increase in braking force.
+Moving the brake lever to LAP maintains both pressures.
+Moving the lever to REL cause the braking force
+to immediately drop to zero and allows the brake line pressure to increase.
+
+<p>
+The second brake application is EMER
+which causes a rapid decrease in brake line pressure and
+increase in braking force until is maxes out at a value of 10.
+
+<p>
+The third application of brakes sequences through SVC1, SVC2 and SVC3,
+each increasing the rate of brake line pressure reduction and
+the increase in braking force, also maxing out.
+The brake line pressure was allowed to drop unnecessarily low.
+Setting the brake lever to REL allows it to increase back to 90 PSI.
+
+<p>
+Braking a train requires anticipating the need for and amount of braking.
