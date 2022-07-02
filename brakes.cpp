@@ -99,12 +99,12 @@ Model_t *pMdl = & models [2];
 // train brakes
 #define AtmPsi      14.7
 #define BrkPsiMax   90
+#define BrkCylMax   25
 #define SqFt        144
 
 #define BrkLnDia    1.5
 #define BrkLnRad    (BrkLnDia/2)
 #define BrkLnArea   (PI * BrkLnRad * BrkLnRad)
-#define BrkPctCoef    3
 
 #define BrkRsvrVol  1.5
 
@@ -143,6 +143,10 @@ void _airBrakes (
 
     switch (brakeAir)  {
     case BRK_A_REL:
+        brkFlRat   = 1;
+        brkLnPsi_0 = brkLnPsi;
+        break;
+
     case BRK_A_RUN:
         brkFlRat   = pMdl->rateRel * perMin;
         brkLnPsi_0 = brkLnPsi;
@@ -223,7 +227,7 @@ void _airBrakes (
     // update braking %
     float dBrkLnPsi = brkLnPsi_0 - brkLnPsi;
     if (0 < dBrkLnPsi)  {
-        brakeAirPct = BrkPctCoef * dBrkLnPsi;
+        brakeAirPct = 100 * dBrkLnPsi / BrkCylMax;
         brakeAirPct = 100 < brakeAirPct ? 100 : brakeAirPct;
     }
 

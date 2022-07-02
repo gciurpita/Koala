@@ -1,7 +1,7 @@
 
 #include "vars.h"
 
-const char *version   = "220613a";
+const char *version   = "220701c";
 
 
 int      dccAdr;
@@ -14,7 +14,7 @@ int      brakeInd;
 float    brakeIndPct;
 int      button;
 
-int      cars;
+int      cars    = 1;
 int      carLen  = 40;
 
 int      cutoff;

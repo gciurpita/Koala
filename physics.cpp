@@ -94,7 +94,7 @@ disp (void)
     if (! (hdr++ % 10))  {
         printf (" %7s", "time");
         printf (" %4s %3s %3s", "cars", "cut", "thr");
-        printf (" %6s %6s %6s %6s", "drawBr", "res", "grF", "brF");
+        printf (" %6s %7s %6s %6s", "drawBr", "res", "grF", "brF");
         printf (" %5s %6s %6s %4s", "force", "acc", "fps", "mph");
 
         if (DBG_BRAKE & debug)
@@ -112,7 +112,7 @@ disp (void)
     printf (" %3d", throttle);
 
     printf (" %6d", tractEff);
-    printf (10 > whRes      ? " %6.2f" : " %6.0f", whRes);
+    printf (10 > whRes      ? " %7.2f" : " %7.0f", whRes);
     printf (" %6.1f", grF);
     printf (10 > ABS(brkF)  ? " %6.2f" : " %6.0f", brkF);
 
