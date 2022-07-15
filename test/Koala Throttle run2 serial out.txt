@@ -1,0 +1,35 @@
+wifiSend: NKoala Throttle
+
+HTJMRI
+HtJMRI 4.24.0 My JMRI Railroad
+RL38]\[Allen's NW2 1931}|{1931}|{L]\[Allen's SW1200}|{2310}|{L]\[B28s 7030}|{7030}|{L]\[BF16 A Shark}|{2004}|{L]\[E6a 60}|{60}|{S]\[F7a 9640}|{9640}|{L]\[F7a 9649}|{9649}|{L]\[FA2 9606}|{9606}|{L]\[GP7 20}|{20}|{S]\[GP7 8501}|{8501}|{L]\[GP7 8502}|{3}|{S]\[GP7 8504}|{8504}|{L]\[GP7 8505}|{8505}|{L]\[GP7 8809}|{8809}|{L]\[GP7II 8569}|{8569}|{L]\[GP7II 8577}|{3}|{S]\[H10s 8014}|{8014}|{L]\[H10s 8259}|{8259}|{L]\[H10s 8421}|{8421}|{L]\[H10s 9915}|{9915}|{L]\[I1sa 4538}|{4538}|{L]\[I1sa 4572}|{4572}|{L]\[K4s 1453}|{1453}|{L]\[L1s 1159}|{1159}|{L]\[L1s 3483}|{3483}|{L]\[M1a 6720}|{6720}|{L]\[M1a 6735}|{6735}|{L]\[M1a 6738}|{6738}|{L]\[P2k E8A}|{5793}|{L]\[P2K GP7 7015}|{7015}|{L]\[P2k SD9 7603}|{7603}|{L]\[RS3 932}|{932}|{L]\[SD7 802}|{802}|{L]\[SD7 8588}|{8588}|{L]\[SD9 7607}|{7607}|{L]\[SD9 7612}|{7612}|{L]\[SW1200 7923}|{7923}|{L]\[TM 8707}|{8707}|{L
+PPA1
+PTT]\[Turnouts}|{Turnout]\[Closed}|{2]\[Thrown}|{4
+PRT]\[Routes}|{Route]\[Active}|{2]\[Inactive}|{4
+RCC0
+PFT1651586601<;>1.0
+PW12080
+*30
+loop: state 0x03 - ST_WIFI ST_JMRI
+engineInit: loco T-1, wt 126, maxTe 63000
+engineRst:  cylVol 10.60, PSI 240, ftPrev 18.33, revPft 0.055, cycPft 0.218  T-1
+chkLoco: locoLst -1 to locoIdx 0,
+wifiSend: MT-*<;>r
+wifiSend: TS0
+wifiSend: TL4524
+disp: wtLoco 200, wtCar 0, wtTot 580000, mass 18012
+brakesMdlPr: 89.0 Rel -30.0 Svc1 -53.0 Svc2 -105.0 Svc3 -300.0 Emer
+    time cars cut thr drawBr    res    grF    brF force    acc    fps  mph   cps   cyc C cnsmp   flw  flow  fill    den  psiCh  MEP psiCyl
+  0:06.2    0   1   0      0   0.00    0.0   0.00  0.00   0.00 0.0000 0.00 0.000 0.000 0 0.000 0.000 0.000 0.000 0.0000    0.0 0.51    0.0
+T0(S)
+RPF}|{T]\[F0}|{false]\[F1}|{false]\[F2}|{false]\[F3}|{false]\[F4}|{true]\[F5}|{false]\[F6}|{false]\[F7}|{false]\[F8}|{false]\[F9}|{false]\[F10}|{false]\[F11}|{false]\[F12}|{false]\[F13}|{false]\[F14}|{false]\[F15}|{false]\[F16}|{false]\[F17}|{false]\[F18}|{false]\[F19}|{false]\[F20}|{false]\[F21}|{false]\[F22}|{false]\[F23}|{false]\[F24}|{false]\[F25}|{false]\[F26}|{false]\[F27}|{false]\[F28}|{false
+TNot Set
+T4524(L)
+RPF}|{T]\[F0}|{true]\[F1}|{false]\[F2}|{false]\[F3}|{false]\[F4}|{true]\[F5}|{false]\[F6}|{false]\[F7}|{false]\[F8}|{false]\[F9}|{false]\[F10}|{false]\[F11}|{false]\[F12}|{false]\[F13}|{false]\[F14}|{false]\[F15}|{false]\[F16}|{false]\[F17}|{false]\[F18}|{false]\[F19}|{false]\[F20}|{false]\[F21}|{false]\[F22}|{false]\[F23}|{false]\[F24}|{false]\[F25}|{false]\[F26}|{false]\[F27}|{false]\[F28}|{false
+  0:07.3    0   0   0      0   0.00    0.0   0.00  0.00   0.00 0.0000 0.00 0.000 0.000 0 0.000 0.000 0.000 0.000 0.0000    0.0 0.00    0.0
+  0:08.4    0   0   0      0   0.00    0.0   0.00  0.00   0.00 0.0000 0.00 0.000 0.000 0 0.000 0.000 0.000 0.000 0.0000    0.0 0.00    0.0
+  0:09.5    0   0   0      0   0.00    0.0   0.00  0.00   0.00 0.0000 0.00 0.000 0.000 0 0.000 0.000 0.000 0.000 0.0000    0.0 0.00    0.0
+  0:10.6    0   0   0      0   0.00    0.0   0.00  0.00   0.00 0.0000 0.00 0.000 0.000 0 0.000 0.000 0.000 0.000 0.0000    0.0 0.00    0.0
+cfgSave: /spiffs/koala.cfg
+loop: state 0x13 - ST_WIFI ST_JMRI ST_MENU
+
