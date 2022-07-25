@@ -38,10 +38,10 @@ typedef enum {
     T_PARAM,
     T_STR,
     T_LIST,
-} T_t;
+} TT_t;
 
 inline const char *
-menuType (T_t t)
+menuType (TT_t t)
 {
     switch (t)  {
     case T_NULL:
@@ -78,7 +78,7 @@ menuType (T_t t)
 typedef struct {
     const char *text;
     const char *text2;
-    T_t         type;
+    TT_t        type;
     void       *ptr;
     int        *pParam;
 } Menu_t;
