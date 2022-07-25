@@ -6,7 +6,12 @@
 #include <BluetoothSerial.h>
 #endif
 
-#include <WiFi.h>
+#define AP
+#ifdef AP
+# include <WiFiManager.h>
+#else
+# include <WiFi.h>
+#endif
 
 #include "brakes.h"
 #include "buttons.h"
@@ -41,6 +46,7 @@ SSD1306Wire  display(0x3c, 21, 22);
 BluetoothSerial     serialBT;
 #endif
 WiFiClient          wifi;
+WiFiManager         wm;
 
 // -----------------------------------------------------------------------------
 const char * stateStr [] = {
@@ -492,7 +498,12 @@ setup (void)
 
     WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE, INADDR_NONE);
     WiFi.setHostname (name);
+#ifdef AP
+    Serial.println ("WiFi autoConnect");
+    wm.autoConnect ("Koala AP");
+#else
     WiFi.begin (ssid, pass);
+#endif
 
     // init hardware
     pinMode (LED, OUTPUT);
