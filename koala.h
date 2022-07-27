@@ -41,6 +41,8 @@ extern SSD1306Wire  display;
 extern unsigned int debug;
 extern void eStop (void);
 extern void dispOled (const char*, const char*, const char*, const char*, bool); 
+
+
 // extern char s0[30];
 // extern char s1[30];
 //
@@ -51,5 +53,8 @@ enum { FUNC_CLR, FUNC_SET, FUNC_TGL };
 int jmriFuncKey (unsigned func, int cmd);
 
 void wifiSend (const char*);
+
+void wifiSetup ();
+void wifiReconnect ();
 
 #endif

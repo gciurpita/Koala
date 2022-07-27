@@ -93,10 +93,15 @@ extern int      wtCar;
 extern char     name [];
 extern const char *version;
 
-extern char     host [];
-extern int      port;
+extern char         host [];
+extern int          port;
 
-extern char     ssid [];
-extern char     pass [];
+extern char         ssid [];
+extern char         pass [];
+extern char         apSsid [];
+extern IPAddress    thIP;        // throttle IP as an IPAddress object
+extern char         thIPString [];    // throttle IP as a string
+extern IPAddress    apIP;              // IP address of throttle if in AP mode
+extern char         apIPString [];
 
 #endif
