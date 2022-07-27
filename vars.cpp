@@ -90,9 +90,19 @@ int      locoIdx         = 0;
 // WiFi and JMRI Server Definitions
 char     ssid [MAX_CHAR] = "WiFi-ssid";
 char     pass [MAX_CHAR] = "WiFi-password";
+char     host [MAX_CHAR] = "10.0.0.103";  // IP address of JMRI server as a string
 
-char     host [MAX_CHAR] = "192.168.0.41";
+/* IPAddress creates an object with the listed IP - used by wifi methods
+ this is a fixed IP, set by the user, allowing web interface to find the throttle 
+ */
+IPAddress thIP (10, 0, 0, 251);
+char     thIPString [MAX_CHAR] = "10.0.0.251";
+
+IPAddress   apIP (192, 168, 4, 1);
+char     apIPString [MAX_CHAR] = "192.168.4.1";
+
 int      port            = 12080;
+char     apSsid [MAX_CHAR] = "Koala Access Point";
 
 
 Loco_s locos [N_LOCO] = {

@@ -1,7 +1,7 @@
 // Koala Throttle
 // -----------------------------------------------------------------------------
 
-#define BT
+//#define BT
 #ifdef BT
 #include <BluetoothSerial.h>
 #endif
@@ -257,7 +257,7 @@ static void jmriConnect (void)
     sprintf (s0, "%d", port);
     dispOled("JMRI connecting", host, s0, 0, CLR);
 
-#if 0
+#if 1
     sprintf (s, "JMRI connecting, %s, %s", host, s0, 0);
     Serial.println (s);
 #endif
@@ -329,6 +329,7 @@ static void wifiConnect (void)
         dispOled("WiFi connecting", ssid, pass, 0, CLR);
 
     delay (1000);
+
 }
 
 // ---------------------------------------------------------
@@ -411,11 +412,20 @@ void loop()
         dispInputs ();
     }
 
+#if 0
     // -------------------------------------
     // attempt wifi connection
+
     else if (! (ST_WIFI & state) && ! (ST_CFG & state))  {
         wifiConnect ();
     }
+#endif
+
+#if 0
+    // if wifi disconnected, do a reconnect (not yet implemented)
+    else if (WiFi.status() != WL_CONNECTED)
+        wifiReconnect ();
+#endif
 
     // -------------------------------------
     // attempt jmri connection if WiFi established
@@ -490,10 +500,6 @@ setup (void)
         cfgSave (cfgFname);
 #endif
 
-    WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE, INADDR_NONE);
-    WiFi.setHostname (name);
-    WiFi.begin (ssid, pass);
-
     // init hardware
     pinMode (LED, OUTPUT);
 
@@ -519,4 +525,6 @@ setup (void)
         state |= ST_WIFI | ST_JMRI;
     else
         state  = 0;
+        wifiSetup ();
+
 }
