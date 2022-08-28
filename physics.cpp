@@ -207,7 +207,7 @@ int           brkMode )
     // -------------------------------------
 #if 1
     static unsigned long msecLst2 = 0;
-    if (debug && ((msec - msecLst2) > 1000))  {
+    if (debug && ((msec - msecLst2) >= 1000))  {
         msecLst2 = msec;
         disp ();
     }
