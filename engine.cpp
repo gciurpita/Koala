@@ -257,6 +257,8 @@ cylinderPressure (
     }
 
     st.consume  = st.cylVol * dCyc;
+    st.consume  = 0 > st.consume ? 0 : st.consume;
+
     subCycLst   = subCyc;
 
     // -------------------------------------
@@ -279,6 +281,7 @@ cylinderPressure (
     // determine steam chest pressure
 #define STCHEST_VOL     (1.5 * st.cylVol)
     st.den     = st.fill / STCHEST_VOL;
+
     st.psiChst = interp(st.den, StDenS, StPsi, ST, 0) - PsiStd;
     st.psiChst = st.psiChst > 0           ? st.psiChst : 0; 
     st.psiChst = st.psiChst < pEng->PSI ? st.psiChst : pEng->PSI;
