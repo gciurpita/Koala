@@ -35,6 +35,7 @@ unsigned long    msec;
 int      mass;
 
 float    mph;
+float    mphLst;
 float    mphToDcc;
 
 int      reverser;

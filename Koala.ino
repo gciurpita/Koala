@@ -438,6 +438,15 @@ void loop()
                 __func__, dccSpd, mph, mphToDcc);
             dccSpdLst = dccSpd;
 
+            // check for change in direction (mphLst maintained in physics())
+            if (SGN(mphLst) != SGN(mph))  {
+                if (0 > mph)
+                    wifiSend ("TR0");
+                else
+                    wifiSend ("TR1");
+            }
+
+            printf (" %s: %3d For\n", __func__, reverser);
             sprintf (s, "TV%d", dccSpd);
             wifiSend (s);
         }

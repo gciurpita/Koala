@@ -30,6 +30,9 @@ extern SH1106Wire  display;
 extern SSD1306Wire  display;
 # endif
 
+#define ABS(x)   (0 > (x) ? -(x) : (x))
+#define SGN(x)   (0 > (x) ? -1   : 1)
+
 #define DBG_ENGINE   2
 #define DBG_BRAKE    4
 #define DBG_CYLPRESS 8
