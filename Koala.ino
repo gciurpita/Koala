@@ -432,19 +432,20 @@ void loop()
         physics (msec, DispInterval, PrThr);
 
         // update JMRI
+        // check for change in direction (mphLst maintained in physics())
+        if (SGN(mphLst) != SGN(mph))  {
+            printf ("%s: mphLst %.2f, mph %.2f\n", __func__, mphLst, mph);
+            if (0 > mph)
+                wifiSend ("TR0");
+            else
+                wifiSend ("TR1");
+        }
+
         dccSpd = mph * mphToDcc;
         if (dccSpdLst != dccSpd)  {
             printf ("%s: dccSpd %d, mph %.1f, mphToDcc %.2f\n",
                 __func__, dccSpd, mph, mphToDcc);
             dccSpdLst = dccSpd;
-
-            // check for change in direction (mphLst maintained in physics())
-            if (SGN(mphLst) != SGN(mph))  {
-                if (0 > mph)
-                    wifiSend ("TR0");
-                else
-                    wifiSend ("TR1");
-            }
 
             printf (" %s: %3d For\n", __func__, reverser);
             sprintf (s, "TV%d", dccSpd);
