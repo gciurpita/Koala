@@ -111,7 +111,7 @@ disp (void)
 
     printf (" %6d", tractEff);
     printf (10 > whRes      ? " %7.2f" : " %7.0f", whRes);
-    printf (" %6.1f", grF);
+    printf (" %6.0f", grF);
     printf (10 > ABS(brkF)  ? " %6.2f" : " %6.0f", brkF);
 
     printf (10 > ABS(force) ? " %5.2f" : " %5.0f", force);
@@ -208,7 +208,7 @@ int           brkMode )
     // -------------------------------------
 #if 1
     static unsigned long msecLst2 = 0;
-    if (debug && ((msec - msecLst2) >= 1000))  {
+    if (DBG_FORCE & debug || ((msec - msecLst2) >= 1000))  {
         msecLst2 = msec;
         disp ();
     }

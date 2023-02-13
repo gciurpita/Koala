@@ -37,6 +37,7 @@ extern SSD1306Wire  display;
 #define DBG_BRAKE    4
 #define DBG_CYLPRESS 8
 
+#define DBG_FORCE    16
 #define DBG_MENU     32
 #define DBG_BUT      64
 #define DBG_KEYPAD  128
