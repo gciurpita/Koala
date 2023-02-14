@@ -1,7 +1,7 @@
 
 #include "vars.h"
 
-const char *version   = "220701c";
+const char *version   = "230211a";
 
 
 int      dccAdr;
