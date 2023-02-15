@@ -17,6 +17,7 @@ September 2022 <br> Greg Ciurpita
    <li> <a href=#consump>    Steam Consumption vs Supply </a>
   </ul>
  <li> <a href=#brakes>  Brakes: Air and Independent </a>
+ <li> <a href=#callFlow>    Code Call Flow</a>
 </ul>
 
 
@@ -370,3 +371,56 @@ Braking a train requires anticipating the need for and amount of braking.
      50     10   22.8    835   3.22
      55     10   25.1   1010   3.22
 </blockquote><p/re>
+
+<!-- ------------------------------------------------------  --------------- -->
+<hr>
+<a name=callFlow></a>
+<h4>Steam Locomotive Physics (call flow)</h4>
+<ul>
+ <li>physics()
+  <ul>
+    <li> _reverser()
+    <li> brakes()
+    <li> engineTe()
+    <li> update tonnage and total weight
+    <li> account for grade
+    <li> account for rolling resistance (when moving)
+    <li> account for braking in loco and cars and brake direction
+            not exceeding current force
+    <li> update acceleration and speed
+  </ul>
+</ul>
+
+<h4>Steam Engine Algorithm (call flow)</h4>
+<ul>
+ <li>engineTe()
+  <ul>
+    <li> update cylinder cycle parameters
+    <li> account for slip on tractive effort (st.te)
+    <li> resistanceLoco() - account for locomotive resistance
+    <li> cylinderPressure()
+     <ul>
+        <li> track (while/integer) cycle 
+        <li> determine partial cycle admission
+        <li> determine change in cycle consumption
+        <li> throttleDia()
+        <li> srFlow() - update flow rate
+        <li> interp() - steam chest pressure
+        <li> mep()
+     </ul>
+    <li> cylForce() - compute tractive effort, wheel force on rails
+    <li> resistanceLoco()
+    <li> return st.lbFnet
+  </ul>
+
+ <li>engineRst()
+
+ <li>engineInit()
+  <ul>
+    <li> engineRst()
+  </ul>
+</ul>
+
+<h4>Brakes Algorithm (call flow)</h4>
+
+TBD

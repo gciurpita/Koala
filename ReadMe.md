@@ -102,6 +102,15 @@ So a single application of brakes may drop the brake line pressure from 90 to 65
 
 <!-- ------------------------------------------------------  --------------- -->
 ---
+#### Additional Docs
+
+<li> <a href=Docs/algorithm_2019.html> Algorithms</a>
+<li> <a href=Docs/design.html>         Design</a>
+<li> <a href=Docs/theory.html>         Theory</a>
+<li> <a href=Docs/userManual.html>     User Manual</a>
+
+<!-- ------------------------------------------------------  --------------- -->
+---
 #### Downloading
 
 The github repository contain the source code and documentation.
