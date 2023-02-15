@@ -257,6 +257,8 @@ cylinderPressure (
     }
 
     st.consume  = st.cylVol * dCyc;
+    st.consume  = 0 > st.consume ? 0 : st.consume;
+
     subCycLst   = subCyc;
 
     // -------------------------------------
@@ -269,27 +271,17 @@ cylinderPressure (
     st.flow    +=  st.flw;
 #endif
 
-    if (DBG_CYLPRESS & debug)  {
-        printf ("%s: dia %.1f thr %.1f, pipe %.1f\n", __func__, st.thrDia, st.thr, pEng->pipeDia);
-        printf ("%s: flw %.1f PSI %d, psiCh %.1f, dTsec %.1f\n",
-            __func__, st.flw, pEng->PSI, st.psiChst, dTsec);
-        printf ("%s: flow %.1f  %s\n", __func__, st.flow, pEng->name);
-        printf ("%s:", __func__);
-    }
-
     // -------------------------------------
     // update amount of steam in steam chest 
     st.fill    += st.flow;                      // flow from throttle
     st.fill    -= st.consume;
     st.fill     = 0 > st.fill ? 0 : st.fill;
 
-    if (DBG_CYLPRESS & debug)
-        printf (" fill %.1f, consume %.1f", st.fill, st.consume);
-
     // -------------------------------------
     // determine steam chest pressure
 #define STCHEST_VOL     (1.5 * st.cylVol)
     st.den     = st.fill / STCHEST_VOL;
+
     st.psiChst = interp(st.den, StDenS, StPsi, ST, 0) - PsiStd;
     st.psiChst = st.psiChst > 0           ? st.psiChst : 0; 
     st.psiChst = st.psiChst < pEng->PSI ? st.psiChst : pEng->PSI;
@@ -298,8 +290,40 @@ cylinderPressure (
     st.mep      = mep(st.cut);      // determine cyliner pressure !
     st.psiCyl   = st.mep * st.psiChst;
 
-    if (DBG_CYLPRESS & debug)
-        printf (" den %.1f, psiCh %.1f\n", st.den, st.psiChst);
+    static int hdr;
+    if (DBG_CYLPRESS & debug)  {
+        if (! hdr++ % 10)  {
+            printf ("%s:", __func__);
+            printf (" %6s", "dTsec");
+            printf (" %6s", "cyc");
+            printf (" %6s", "nCyc");
+            printf (" %6s", "flw");
+            printf (" %6s", "PSI");
+            printf (" %6s", "psiCh");
+            printf (" %6s", "flow");
+            printf (" %6s", "fill");
+            printf (" %6s", "consum");
+            printf (" %6s", "den");
+            printf (" %6s", "mep");
+            printf (" %6s", "psiCh");
+            printf ("\n");
+        }
+
+        printf ("%s:", __func__);
+        printf (" %6.1f", dTsec);
+        printf (" %6.1f", st.cyc);
+        printf (" %6.0f", nCyc);
+        printf (" %6.1f", st.flw);
+        printf (" %6.1f", pEng->PSI);
+        printf (" %6.1f", st.psiChst);
+        printf (" %6.1f", st.flow);
+        printf (" %6.1f", st.fill);
+        printf (" %6.1f", st.consume);
+        printf (" %6.1f", st.den);
+        printf (" %6.1f", st.mep);
+        printf (" %6.1f", st.psiChst);
+        printf ("\n");
+    }
 }
 
 // --------------------------------------------------------------------

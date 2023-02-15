@@ -18,8 +18,7 @@
 unsigned long msecLst = 0;
 int           dMsec;
 
-#define ABS(x)   (0 > (x) ? -(x) : (x))
-#define SGN(x)   (0 > (x) ? -1   : 1)
+
 #define NBR     0.10        // nominal brake ratio
 
 // ---------------------------------------------------------
@@ -27,18 +26,18 @@ void _reverser (void)
 {
     if (DIR_FOR != dir && (MAX_MID + 10) < reverser)  {
         dir = DIR_FOR;
-        wifiSend ("TR1");
-        printf (" %s: %3d For\n", __func__, reverser);
+    //    wifiSend ("TR1");
+    //    printf (" %s: %3d For\n", __func__, reverser);
     }
     else if (DIR_REV != dir && (MAX_MID - 10) > reverser)  {
         dir = DIR_REV;
-        wifiSend ("TR0");
-        printf (" %s: %3d Rev\n", __func__, reverser);
+    //    wifiSend ("TR0");
+    //    printf (" %s: %3d Rev\n", __func__, reverser);
     }
     else if (DIR_NEUTRAL != dir &&
         (MAX_MID - 10) < reverser && reverser < (MAX_MID + 10))  {
         dir      = DIR_NEUTRAL;
-        printf (" %s: %3d Neutral\n", __func__, reverser);
+    //    printf (" %s: %3d Neutral\n", __func__, reverser);
     }
 }
 
@@ -61,7 +60,6 @@ float fps = 0;          // should be initialized when loco set
 int   b[10];
 
 int   hdr = 0;
-int   mphLst = 0;
 float whRes;
 int   wtTot;
 
@@ -108,17 +106,17 @@ disp (void)
     printf (" %2d:%04.1f", mins, sec / 1000.0);
 
     printf (" %4d", cars);
-    printf (" %s%2d", 0>dir ? "-" : " ", cutoff);
+    printf (" %s%2d", 0>dir ? "-" : " ", cutoff);   // dir of reverser
     printf (" %3d", throttle);
 
     printf (" %6d", tractEff);
     printf (10 > whRes      ? " %7.2f" : " %7.0f", whRes);
-    printf (" %6.1f", grF);
+    printf (" %6.0f", grF);
     printf (10 > ABS(brkF)  ? " %6.2f" : " %6.0f", brkF);
 
     printf (10 > ABS(force) ? " %5.2f" : " %5.0f", force);
     printf (" %6.2f", acc);
-    printf (10 > fps ? " %6.4f" : " %6.0f", fps);
+    printf (10 > fps ? " %6.2f" : " %6.0f", fps);
     printf (10 > mph ? " %4.2f" : " %4.1f", mph);
 
     if (DBG_BRAKE & debug)
@@ -162,10 +160,11 @@ int           brkMode )
     // forces
 
     // tractive effort
-    force      = tractEff;
+    force      = dir*tractEff;
 
-    // grade relative to forward direction of train
-    force     += grF = -wtTot * grX10 / 1000;
+    // grade relative to johnson bar, >0 grade results in -force
+    grF    = -wtTot * grX10 / 1000;
+    force += grF;
 
     // wheel resistance
     float rf   =  rollRes (fps/MphTfps);
@@ -197,17 +196,19 @@ int           brkMode )
     mass  = wtTot / G;
     acc   = force / mass;
     fps  += acc * dMsec / 1000;
-    mph   = fps / MphTfps;
 
-    static float mphLst;
-    if (0 != mphLst && SGN(mphLst) != SGN(mph))
-        fps = mph = 0;
     mphLst = mph;
+    mph    = fps / MphTfps;
+
+    if (0 != mphLst && SGN(mphLst) != SGN(mph))  {
+
+        fps = mph = 0;
+    }
 
     // -------------------------------------
 #if 1
     static unsigned long msecLst2 = 0;
-    if (debug && ((msec - msecLst2) > 1000))  {
+    if (DBG_FORCE & debug || ((msec - msecLst2) >= 1000))  {
         msecLst2 = msec;
         disp ();
     }

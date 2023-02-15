@@ -1,7 +1,7 @@
 
 #include "vars.h"
 
-const char *version   = "220701c";
+const char *version   = "230211a";
 
 
 int      dccAdr;
@@ -35,6 +35,7 @@ unsigned long    msec;
 int      mass;
 
 float    mph;
+float    mphLst;
 float    mphToDcc;
 
 int      reverser;

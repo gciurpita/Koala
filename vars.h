@@ -70,6 +70,7 @@ extern unsigned long    msec;
 extern int      mass;
 
 extern float    mph;
+extern float    mphLst;
 extern float    mphToDcc;
 
 extern int      reverser;
