@@ -263,8 +263,8 @@ The independent brake pressure on the loco directly controls the brake, unlike t
 Auto/air brakes are like DCC in that the brake line both provides the impetus of the brakes, pressurizing the air reservoir in each car as well as signaling when to apply and release brakes.
 
 <p>
-<a href=http://www.railway-technical.com/trains/rolling-stock-index-l/train-equipment/brakes>
-<img src=http://www.railway-technical.com/_Media/whse-brake-block-v1_med_hr_med.png align=right></a>
+<a href=https://www.wplives.org/forms_and_documents/Air_Brake_Principles.pdf>
+<img src=Images/brakes.png align=right></a>
 
 The locomotive has air pumps and tanks
 to supply air to brake line connecting each car of the train.
