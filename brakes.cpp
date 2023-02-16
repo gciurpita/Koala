@@ -127,9 +127,6 @@ float timeMsec    = 0;
 void _airBrakes (
     int dMsec )
 {
-    if (0 == cars)
-        return;
-
     if (0)
         printf ("%s: brkLnPsi %4.1f, brakeAir %d\n",
             __func__, brkLnPsi, brakeAir);
@@ -180,7 +177,7 @@ void _airBrakes (
 
     // -----------------------------------------------
     // update brake line and reservoir fill
-    brkLnVol   = cars * carLen * BrkLnArea / SqFt;
+    brkLnVol   = (0.1 + cars) * carLen * BrkLnArea / SqFt;
     brkRsvrVol = cars * BrkRsvrVol;
 
     // update brake line and reservoir fill

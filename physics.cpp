@@ -174,9 +174,14 @@ int           brkMode )
         force     += whRes;
 
     // brakes
-    brkF  = (cars * wtCar) * brakeAirPct / 100;
-    brkF +=  pEng->wtLoco  * brakeIndPct / 100;
-    brkF *= -SGN(mph) * LbPton * NBR;
+    if (brakeIndPct)  {
+        brkF  = (cars * wtCar) * brakeAirPct / 100;
+        brkF +=  pEng->wtLoco  * brakeIndPct / 100;
+    }
+    else
+        brkF  = wtTot * brakeAirPct / 100;
+
+    brkF *= -SGN(mph) * NBR;
 
     // brake force shouldn't cause train to move
     //     can't excede tractive + grade force
