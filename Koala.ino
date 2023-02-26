@@ -279,6 +279,24 @@ static void jmriConnect (void)
     }
 }
 
+// -----------------------------------------------------------------------------
+// each function msg indicates function button pressed or release
+//     therefore two sent: one for press and 2nd for release
+enum { Release, Press };
+
+void
+jmriFuncBut (
+    unsigned  func)
+{
+    char s [20];
+
+    sprintf (s, "TF%d%d", Press, func);
+    wifiSend (s);
+
+    sprintf (s, "TF%d%d", Release, func);
+    wifiSend (s);
+}
+
 // ---------------------------------------------------------
 #define N_FUNC 29
 int funcState [N_FUNC] = {};
