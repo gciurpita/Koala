@@ -305,27 +305,7 @@ int jmriFuncKey (
     unsigned func,
     int       cmd )
 {
-    if (N_FUNC <= func)  {
-        printf ("jmriFuncKey: invalid function - %d\n", func);
-        return 1;
-    }
-
-    switch (cmd)  {
-    case FUNC_CLR:
-        funcState [func] = 0;
-        break;
-
-    case FUNC_SET:
-        funcState [func] = 1;
-        break;
-
-    case FUNC_TGL:
-    default:
-        funcState [func] ^= 1;
-        break;
-    }
-
-    sprintf (s, "TF%d%d", funcState [func], func);
+    sprintf (s, "TF%d%d", func, cmd);
     wifiSend (s);
 
     return 0;
