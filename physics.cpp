@@ -13,6 +13,7 @@
 #include "phyConst.h"
 #include "physics.h"
 #include "rollRes.h"
+#include "sound.h"
 #include "vars.h"
 
 unsigned long msecLst = 0;
@@ -209,6 +210,9 @@ int           brkMode )
 
         fps = mph = 0;
     }
+
+    // sound
+    soundBrkSql (brkF);
 
     // -------------------------------------
 #if 1

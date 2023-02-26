@@ -13,6 +13,7 @@
 #include "engine.h"
 #include "koala.h"
 #include "rollRes.h"
+#include "sound.h"
 
 // ----------------------------------------------------------
 // state variables
@@ -457,6 +458,9 @@ engineTe (
     }
     else
         st.te  = st.lbFloco;
+
+    // sound
+    soundChuff (st.lbFloco, st.maxTe);
 
     // --------------------------------------
     // handle resistive forces at standstill and in reverse
