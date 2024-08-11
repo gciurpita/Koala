@@ -443,11 +443,12 @@ void loop()
 
         dccSpd = mph * mphToDcc;
         if (dccSpdLst != dccSpd)  {
-            printf ("%s: dccSpd %d, mph %.1f, mphToDcc %.2f\n",
-                __func__, dccSpd, mph, mphToDcc);
+#if 0
+            printf ("%s: dccSpd %d, mph %.1f, mphToDcc %.2f, rvsr %d\n",
+                __func__, dccSpd, mph, mphToDcc, reverser);
+#endif
             dccSpdLst = dccSpd;
 
-            printf (" %s: %3d For\n", __func__, reverser);
             sprintf (s, "TV%d", dccSpd);
             wifiSend (s);
         }
