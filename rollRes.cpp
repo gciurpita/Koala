@@ -4,6 +4,8 @@
 
 #include "rollRes.h"
 
+#define ABS(x)   (0 > (x) ? -(x) : (x))
+
 // ----------------------------------------------------------
 // train resistance (lb/ton) tables from Armstrong
 
@@ -74,6 +76,7 @@ float
 rollRes (
     float mph )
 {
+    mph       = ABS(mph);
     float res = interp (mph, resMph, resMix, RES);
 
     res = 0 > res ? 0 : res;
