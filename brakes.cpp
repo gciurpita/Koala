@@ -124,6 +124,16 @@ float brkRsvrVol;
 
 float timeMsec    = 0;
 
+// -------------------------------------
+void airBrkFill (
+    int  psi )
+{
+
+    brkLnPsi = psi;
+    brkLnFil = brkLnVol * brkLnPsi / AtmPsi;
+}
+
+// -------------------------------------
 void _airBrakes (
     int dMsec )
 {

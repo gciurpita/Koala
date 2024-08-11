@@ -26,7 +26,7 @@ extern const char * indBrkStr [];
 
 extern const char * brakeStr [];
 
-extern float brkLnPsi;
+extern void airBrkFill (int  psi);
 
 extern void brakes   (int dMsec);
 extern void brakesPr (int hdr);
