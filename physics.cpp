@@ -93,7 +93,7 @@ disp (void)
         printf (" %7s", "time");
         printf (" %4s %3s %3s", "cars", "cut", "thr");
         printf (" %6s %7s %6s %6s", "drawBr", "res", "grF", "brF");
-        printf (" %5s %6s %6s %4s", "force", "acc", "fps", "mph");
+        printf (" %6s %6s %6s %4s", "force", "acc", "fps", "mph");
 
         if (DBG_BRAKE & debug)
             brakesPr (1);
@@ -109,12 +109,20 @@ disp (void)
     printf (" %s%2d", 0>dir ? "-" : " ", cutoff);   // dir of reverser
     printf (" %3d", throttle);
 
-    printf (" %6d", tractEff);
-    printf (10 > whRes      ? " %7.2f" : " %7.0f", whRes);
-    printf (" %6.0f", grF);
-    printf (10 > ABS(brkF)  ? " %6.2f" : " %6.0f", brkF);
+    if (st.slip)
+        printf (" %6s", "-slip-");
+    else
+        printf (" %6d", tractEff);
 
-    printf (10 > ABS(force) ? " %5.2f" : " %5.0f", force);
+    printf (10 > ABS(whRes)  ? " %7.2f" : " %7.0f", whRes);
+    printf (" %6.0f", grF);
+#if 0
+    printf (" %6.2f", brakeIndPct);
+#else
+    printf (10 > ABS(brkF)  ? " %6.2f" : " %6.0f", brkF);
+#endif
+
+    printf (10 > ABS(force) ? " %6.2f" : " %6.0f", force);
     printf (" %6.2f", acc);
     printf (10 > fps ? " %6.2f" : " %6.0f", fps);
     printf (10 > mph ? " %4.2f" : " %4.1f", mph);
