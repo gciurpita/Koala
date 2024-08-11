@@ -9,10 +9,13 @@
 # include <string.h>
 #endif
 
+#include "avgForce.h"
 #include "eng.h"
 #include "engine.h"
 #include "koala.h"
 #include "rollRes.h"
+
+#include "vars.h"
 
 // ----------------------------------------------------------
 // state variables
@@ -438,12 +441,18 @@ engineTe (
     }
 
     // update forces
+#if 1
     cylinderPressure(dTsec);
 
     st.lbFloco  = cylForce(st.psiCyl,
         pEng->cylDia, pEng->cylStr, pEng->drvrDia) * mep(st.cut);
+#else
+    st.lbFloco  = avgForce(mph, cutoff) * pEng->PSI * st.cylArea
+                    * st.thr / 100.;
+#endif
 
     // correct TE for slip
+#if 1
     if (st.slip)  {
         st.te = st.slpTe;
         if (st.slpTe > st.lbFloco)  {
@@ -456,6 +465,7 @@ engineTe (
         st.slip= 1;
     }
     else
+#endif
         st.te  = st.lbFloco;
 
     // --------------------------------------
@@ -466,6 +476,29 @@ engineTe (
     st.lbFnet    = 0;
     if (st.te > st.locFres)
         st.lbFnet    = st.te - st.locFres;
+
+#if 0
+    printf (" %s:",            __func__);
+# if 0
+    printf (" mph %4.2f",      mph);
+    printf (" cutoff %4.2f",   cutoff);
+    printf (" avgForce %4.2f", avgForce(mph, cutoff));
+
+# else
+ // printf (" PSI %3d",      pEng->PSI);
+ // printf (", cylArea %6.2f", st.cylArea);
+
+    printf (", thr %6.0f",     st.thr);
+    printf (", lbFloco %6.0f", st.lbFloco);
+    printf (", locFres %6.0f", st.locFres);
+    printf (", te %6.0f",      st.te);
+    printf (", maxTe %6ld",    st.maxTe);
+ // printf (", wtAdh %6d",   pEng->wtAdh);
+    printf (", lbFnet %6.0f",  st.lbFnet);
+    printf ("  %s",            pEng->name);
+# endif
+    printf ("\n");
+#endif
 
     return st.lbFnet;
 }
