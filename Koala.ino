@@ -279,6 +279,24 @@ static void jmriConnect (void)
     }
 }
 
+// -----------------------------------------------------------------------------
+// each function msg indicates function button pressed or release
+//     therefore two sent: one for press and 2nd for release
+enum { Release, Press };
+
+void
+jmriFuncBut (
+    unsigned  func)
+{
+    char s [20];
+
+    sprintf (s, "TF%d%d", Press, func);
+    wifiSend (s);
+
+    sprintf (s, "TF%d%d", Release, func);
+    wifiSend (s);
+}
+
 // ---------------------------------------------------------
 #define N_FUNC 29
 int funcState [N_FUNC] = {};
@@ -287,27 +305,7 @@ int jmriFuncKey (
     unsigned func,
     int       cmd )
 {
-    if (N_FUNC <= func)  {
-        printf ("jmriFuncKey: invalid function - %d\n", func);
-        return 1;
-    }
-
-    switch (cmd)  {
-    case FUNC_CLR:
-        funcState [func] = 0;
-        break;
-
-    case FUNC_SET:
-        funcState [func] = 1;
-        break;
-
-    case FUNC_TGL:
-    default:
-        funcState [func] ^= 1;
-        break;
-    }
-
-    sprintf (s, "TF%d%d", funcState [func], func);
+    sprintf (s, "TF%d%d", func, cmd);
     wifiSend (s);
 
     return 0;
